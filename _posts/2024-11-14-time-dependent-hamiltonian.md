@@ -33,7 +33,6 @@ $$
 \hat{C}_n\left(t,t_1,t_2,\cdots,t_n\right) = \left[\hat{C}_{n-1}\left(t,t_1,t_2,\cdots,t_{n-1}\right),\hat{H}_S\left(t_n\right) \right]
 $$
 
-<!-- more -->
 
 To deal with the problem, we first sketch the proofs of several lemmas.
 
@@ -55,7 +54,11 @@ $$
 \int_{t_0}^{t}dt_1 \int_{t_0}^{t_1}dt_2 = \int_{t_0}^{t}dt_2 \int_{t_2}^{t}dt_{1}
 $$
 
-where LHS and RHS both correspond to the integration over $D=\{(t_1,t_2)\ | \ t_0\leq t_1 \leq t,\ t_0\leq t_2 \leq t, \ t_2 \leq t_1\}$.
+where LHS and RHS both correspond to the integration over
+
+$$
+D=\{(t_1,t_2)\ | \ t_0\leq t_1 \leq t,\ t_0\leq t_2 \leq t, \ t_2 \leq t_1\}
+$$
 
 - Induction: suppose we already have
 
@@ -70,11 +73,9 @@ $$
     & \int_{t_0}^{t}dt_1 \int_{t_0}^{t_1}dt_2  \cdots \int_{t_0}^{t_{n-1}}dt_n \int_{t_0}^{t_{n}}dt_{n+1}\\ =& \boxed {\int_{t_0}^{t}dt_1 \int_{t_0}^{t_1}dt_{n+1}} \int_{t_{n+1}}^{t_1}dt_n  \cdots \int_{t_3}^{t}dt_2 
     \\ =& \int_{t_0}^{t}dt_{n+1} \boxed{ \int_{t_{n+1}}^{t}dt_{1} \int_{t_{n+1}}^{t_1}dt_n } \cdots \int_{t_3}^{t}dt_2 
     \\ =& \cdots
-    \\ =& \int_{t_0}^{t}dt_{n+1} \int_{t_{n+1}}^{t}dt_{n}  \cdots \int_{t_3}^{t}dt_2  \int_{t_2}^{t}dt_1 
+    \\ =& \int_{t_0}^{t}dt_{n+1} \int_{t_{n+1}}^{t}dt_{n}  \cdots \int_{t_3}^{t}dt_2  \int_{t_2}^{t}dt_1 \quad \quad \quad \Box
 \end{align*} 
 $$
-
-which wraps up our proof of Lemma 1. $\Box$
 
 ## Lemma 2
 
@@ -92,7 +93,7 @@ $$
 U\left(t, t_0\right) = \mathbb{1} + \sum_{n=1}^{\infty} \left(-\frac{i}{\hbar}\right)^n \int_{t_0}^{t}dt_1 H_S(t_1) \int_{t_0}^{t_1}dt_2 H_S(t_2) \cdots \int_{t_0}^{t_{n-1}}dt_n H_S(t_n)
 $$
 
-This is not hard to prove. (details omitted) $\Box$
+This is not hard to prove. (details omitted) \\(\Box\\)
 
 ## Lemma 3
 
@@ -108,7 +109,7 @@ $$
 \frac{\partial}{\partial t_0} H_H\left(t, t_0\right) = \left(\frac{\partial}{\partial t_0}U^\dagger \left(t,t_0\right) \right) \hat{H}_S\left(t\right) U(t,t_0) +  U^\dagger(t,t_0) \hat{H}_S\left(t\right) \left(\frac{\partial}{\partial t_0}U \left(t,t_0\right)\right)
 $$
 
-From Lemma 2, $\frac{\partial}{\partial t_0} U^\dagger\left(t, t_0\right) = -\frac{i}{\hbar} H_S (t_0) U^\dagger\left(t, t_0\right)$. Substitute them back to the previous equation, we finish the proof of Lemma 3. $\Box$
+From Lemma 2, \\(\displaystyle \frac{\partial}{\partial t_0} U^\dagger\left(t, t_0\right) = -\frac{i}{\hbar} H_S (t_0) U^\dagger\left(t, t_0\right)\\). Substitute them back to the previous equation, we finish the proof of Lemma 3. \\(\Box\\)
 
 ## Lemma 4
 
@@ -161,7 +162,7 @@ $$
 \end{align*}
 $$
 
-This finishes our proof of Lemma 4. $\Box$
+This finishes our proof of Lemma 4. \\(\Box\\)
 
 ## Proof of the Theorem
 
@@ -179,7 +180,7 @@ $$
 \frac{\partial}{\partial t_0} f\left(t, t_0\right) = \frac{i}{\hbar} \left[f\left(t, t_0\right), H_S (t_0)\right]
 $$
 
-which means $H_H\left(t, t_0\right)$ and $f\left(t, t_0\right)$ satisfies the same differential equation. 
+which means \\(H_H\left(t, t_0\right)\\) and \\(f\left(t, t_0\right)\\) satisfies the same differential equation. 
 
 On the other hand, 
 
@@ -189,10 +190,10 @@ $$
 
 which means they share the same initial condition.
 
-Thus, for any $t_0<t$, we have
+Thus, for any \\(t_0<t\\), we have
 
 $$
 H_H\left(t, t_0\right) = f\left(t, t_0\right)
 $$
 
-This marks the end of our proof. $\Box$
+This marks the end of our proof. \\(\Box\\)

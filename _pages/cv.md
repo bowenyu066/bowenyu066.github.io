@@ -11,54 +11,57 @@ redirect_from:
 
 Education
 ======
-* Ph.D in Version Control Theory, GitHub University, 2018 (expected)
-* M.S. in Jekyll, GitHub University, 2014
-* B.S. in GitHub, GitHub University, 2012
+
+* **B.S.** in Massachusetts Institute of Technology (Cambridge, MA), *Aug. 2024 – Present*
+  * Major: Physics (Course 8), Artificial Intelligence and Decision Making (Course 6-4)
+* **B.S.** in Peking University (Beijing, China), *Sep. 2023 – July. 2024*
+  * Major: Physics
+  * Transfer to MIT after one year of study
+
+Achievements
+======
+
+* International Physics Olympiad (IPhO) Gold Medalist, *July. 2023*
+  * Represented China at the 53rd International Physics Olympiad (one of 5 team members)
+  * Ranked 1st place in the world and awarded a Gold Medal
+* China National High School Physics Olympiad (CPhO) Gold Medalist, *Dec. 2021 & Oct. 2022*
+  * Awarded the Gold Medal in the finals of the 39th National High School Physics Competition and selected for the national team.
+  * Awarded the Gold Medal in the finals of the 38th National High School Physics Competition.
+
 
 Work experience
 ======
-* Spring 2024: Academic Pages Collaborator
-  * GitHub University
-  * Duties includes: Updates and improvements to template
-  * Supervisor: The Users
 
-* Fall 2015: Research Assistant
-  * GitHub University
-  * Duties included: Merging pull requests
-  * Supervisor: Professor Hub
-
-* Summer 2015: Research Assistant
-  * GitHub University
-  * Duties included: Tagging issues
-  * Supervisor: Professor Git
+* Spring 2025: Research Assistant
+  * Quantum Measurement Group, Massachusetts Institute of Technology
+  * Wrote 1800 lines of Python to implement the machine learning force field methods, including crystal graph neural networks for phonon band gaps and heat conductivity prediction, to drastically reduce computational complexity without sacrificing accuracy
+  * Supervisor: Professor Mingda Li
   
 Skills
 ======
-* Skill 1
-* Skill 2
-  * Sub-skill 2.1
-  * Sub-skill 2.2
-  * Sub-skill 2.3
-* Skill 3
 
-Publications
+* **Languages**: C, C++, Python, Java, LaTeX, CUDA, Julia, SQL, JavaScript, HTML/CSS
+*	**Libraries**: PyTorch, TensorFlow, NumPy, Matplotlib, Catch2, Flask, FastAPI, Pandas, Astropy
+*	**Technologies**: Linux, Git, GitHub, MongoDB, AWS, Docker, Neovim, VSCode
+
+<!-- Publications
 ======
   <ul>{% for post in site.publications reversed %}
     {% include archive-single-cv.html %}
-  {% endfor %}</ul>
+  {% endfor %}</ul> -->
   
-Talks
+<!-- Talks
 ======
   <ul>{% for post in site.talks reversed %}
     {% include archive-single-talk-cv.html  %}
-  {% endfor %}</ul>
+  {% endfor %}</ul> -->
   
-Teaching
+<!-- Teaching
 ======
   <ul>{% for post in site.teaching reversed %}
     {% include archive-single-cv.html %}
-  {% endfor %}</ul>
+  {% endfor %}</ul> -->
   
-Service and leadership
+<!-- Service and leadership
 ======
-* Currently signed in to 43 different slack teams
+* Currently signed in to 43 different slack teams -->
