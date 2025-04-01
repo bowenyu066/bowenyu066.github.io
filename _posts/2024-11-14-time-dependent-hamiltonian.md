@@ -33,7 +33,6 @@ $$
 \hat{C}_n\left(t,t_1,t_2,\cdots,t_n\right) = \left[\hat{C}_{n-1}\left(t,t_1,t_2,\cdots,t_{n-1}\right),\hat{H}_S\left(t_n\right) \right]
 $$
 
-
 To deal with the problem, we first sketch the proofs of several lemmas.
 
 ## Lemma 1
