@@ -22,27 +22,35 @@ Achievements
 ======
 
 * International Physics Olympiad (IPhO) Gold Medalist, *July. 2023*
-  * Represented China at the 53rd International Physics Olympiad (one of 5 team members)
-  * Ranked 1st place in the world and awarded a Gold Medal
-* China National High School Physics Olympiad (CPhO) Gold Medalist, *Dec. 2021 & Oct. 2022*
-  * Awarded the Gold Medal in the finals of the 39th National High School Physics Competition and selected for the national team.
-  * Awarded the Gold Medal in the finals of the 38th National High School Physics Competition.
+  * Represented China at the [53rd International Physics Olympiad](https://international-physics-olympiad2023-tokyo.jp/) (one of 5 team members)
+  * Ranked [1st place](https://ipho-unofficial.org/timeline/2023/individual) in the world and awarded a Gold Medal
+* Chinese Physics Olympiad (CPhO) Gold Medalist, *Dec. 2021 & Oct. 2022*
+  * Awarded the Gold Medal in the finals of the [39th Chinese Physics Olympiad](https://cpho.pku.edu.cn/info/1095/1281.htm) and selected for the national team.
+  * Awarded the Gold Medal in the finals of the [38th Chinese Physics Olympiad](https://cpho.pku.edu.cn/info/1086/1270.htm).
 
 
 Work experience
 ======
 
 * Spring 2025: Research Assistant
-  * Quantum Measurement Group, Massachusetts Institute of Technology
+  * [Quantum Measurement Group](https://qm.mit.edu), Massachusetts Institute of Technology
   * Wrote 1800 lines of Python to implement the machine learning force field methods, including crystal graph neural networks for phonon band gaps and heat conductivity prediction, to drastically reduce computational complexity without sacrificing accuracy
-  * Supervisor: Professor Mingda Li
+  * Supervisor: Professor [Mingda Li](https://web.mit.edu/nse/people/faculty/mli.html)
   
 Skills
 ======
 
-* **Languages**: C, C++, Python, Java, LaTeX, CUDA, Julia, SQL, JavaScript, HTML/CSS
-*	**Libraries**: PyTorch, TensorFlow, NumPy, Matplotlib, Catch2, Flask, FastAPI, Pandas, Astropy
-*	**Technologies**: Linux, Git, GitHub, MongoDB, AWS, Docker, Neovim, VSCode
+* **Languages**: English (fluent), Chinese (native), Spanish (basic)
+* **Programming Languages**: C, Python, LaTeX, Bluespec, shell script, Mathematica
+*	**Libraries**: PyTorch, NumPy, Matplotlib, Pandas, SciPy, scikit-learn, ase, pymatgen, matformer
+*	**Technologies**: Ubuntu, Git, GitHub, VSCode, Jupyter Notebook
+
+Hobbies
+======
+
+* Long-distance running
+  * Half marathon: 1:48:56 (2023 Wuhan Marathon)
+* Table tennis
 
 <!-- Publications
 ======
