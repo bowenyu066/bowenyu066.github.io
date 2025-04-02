@@ -32,7 +32,7 @@ Achievements
 Work experience
 ======
 
-* Spring 2025: Research Assistant
+* **Spring 2025**: Research Assistant
   * [Quantum Measurement Group](https://qm.mit.edu), Massachusetts Institute of Technology
   * Wrote 1800 lines of Python to implement the machine learning force field methods, including crystal graph neural networks for phonon band gaps and heat conductivity prediction, to drastically reduce computational complexity without sacrificing accuracy
   * Supervisor: Professor [Mingda Li](https://web.mit.edu/nse/people/faculty/mli.html)
@@ -48,9 +48,10 @@ Skills
 Hobbies
 ======
 
-* Long-distance running
+* **Long-distance running**
   * Half marathon: 1:48:56 (2023 Wuhan Marathon)
-* Table tennis
+* **Table tennis**
+* **Movies**
 
 <!-- Publications
 ======
