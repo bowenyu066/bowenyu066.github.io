@@ -9,8 +9,7 @@ redirect_from:
 
 {% include base_path %}
 
-Education
-======
+## Education
 
 * **B.S.** in Massachusetts Institute of Technology (Cambridge, MA), *Aug. 2024 – Present*
   * Major: Physics (Course 8), Artificial Intelligence and Decision Making (Course 6-4)
@@ -18,8 +17,7 @@ Education
   * Major: Physics
   * Transfer to MIT after one year of study
 
-Achievements
-======
+## Achievements
 
 * International Physics Olympiad (IPhO) Gold Medalist, *July. 2023*
   * Represented China at the [53rd International Physics Olympiad](https://international-physics-olympiad2023-tokyo.jp/) (one of 5 team members)
@@ -29,35 +27,40 @@ Achievements
   * Awarded the Gold Medal in the finals of the [38th Chinese Physics Olympiad](https://cpho.pku.edu.cn/info/1086/1270.htm).
 
 
-Work experience
-======
+## Work experience
 
 * **Spring 2025**: Research Assistant
   * [Quantum Measurement Group](https://qm.mit.edu), Massachusetts Institute of Technology
-  * Wrote 1800 lines of Python code to implement various machine learning models for predicting the relevant physical properties of materials without sacrificing accuracy
+  * Extensively apply various machine learning force field (MLFF) models, especially MACE, to predict relevant physical properties of materials ( \\(\Gamma\\)-phonon, heat conductivity, etc.) while preserving accuracy
+  * Train a foundational model for non-destructive defect identification from vibrational spectra, specifically phonon density-of-states (PDoS)
   * Supervisor: Professor [Mingda Li](https://web.mit.edu/nse/people/faculty/mli.html)
-  
-Skills
-======
+
+## Publications
+
+### 2025
+
+1. **A Foundation Model for Non-Destructive Defect Identification from Vibrational Spectra** <br>
+  *Mouyang Cheng<sup>†,*</sup>, Chu-Liang Fu<sup>†</sup>, <b><u>Bowen Yu</u></b> <sup>†</sup>, Eunbi Rha, Abhijatmedhi Chotrattanapituk, Douglas L Abernathy, and Mingda Li<sup>*</sup>* <br>
+  <span style="color: gray; font-size: 12px;">
+  <sup>†</sup>These authors contributed equally.
+  <sup>*</sup>Corresponding author.
+  </span>
+  - Paper available at: [arXiv:2506.00725](https://arxiv.org/pdf/2506.00725)
+  ![DefectNet workflow demonstration]({% include base_path %}/images/publications/DefectNet.png)
+
+## Skills
 
 * **Languages**: English (fluent), Chinese (native), Spanish (basic)
 * **Programming Languages**: C, Python, LaTeX, Bluespec, shell script, Mathematica
 *	**Libraries**: PyTorch, NumPy, Matplotlib, Pandas, SciPy, scikit-learn, ase, pymatgen, matformer
 *	**Technologies**: Ubuntu, Git, GitHub, VSCode, Jupyter Notebook
 
-Hobbies
-======
+## Hobbies
 
 * **Long-distance running**
-  * Half marathon: 1:48:56 (2023 Wuhan Marathon)
+  * Half marathon, Personal Best (PB): 1:48:56 (2023 Wuhan Marathon)
 * **Table tennis**
 * **Movies**
-
-<!-- Publications
-======
-  <ul>{% for post in site.publications reversed %}
-    {% include archive-single-cv.html %}
-  {% endfor %}</ul> -->
   
 <!-- Talks
 ======
