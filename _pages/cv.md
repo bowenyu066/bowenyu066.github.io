@@ -40,7 +40,7 @@ redirect_from:
 ### 2025
 
 1. **A Foundation Model for Non-Destructive Defect Identification from Vibrational Spectra** <br>
-  *Mouyang Cheng<sup>†,*</sup>, Chu-Liang Fu<sup>†</sup>, <b><u>Bowen Yu</u></b> <sup>†</sup>, Eunbi Rha, Abhijatmedhi Chotrattanapituk, Douglas L Abernathy, and Mingda Li<sup>*</sup>* <br>
+  *Mouyang Cheng<sup>†,*</sup>, Chu-Liang Fu<sup>†</sup>, <b><u>Bowen Yu</u></b> <sup>†</sup>, Eunbi Rha, Abhijatmedhi Chotrattanapituk, Douglas L Abernathy, Yongqiang Cheng, and Mingda Li<sup>*</sup>* <br>
   <span style="color: gray; font-size: 12px;">
   <sup>†</sup>These authors contributed equally.
   <sup>*</sup>Corresponding author.

@@ -32,6 +32,7 @@ My resume is attached [here](https://bowenyu066.github.io/cv/).
                 <span style="color: gray;">Eunbi Rha</span>,
                 <span style="color: gray;">Abhijatmedhi Chotrattanapituk</span>,
                 <span style="color: gray;">Douglas L Abernathy</span>,
+                <span style="color: gray;">Yongqiang Cheng</span>,
                 <span style="color: gray;">and Mingda Li<sup>*</sup></span>
         </p>
         <p style="display: inline-block; vertical-align: top; font-size: 12px; margin-top: -5px; color: gray;">
