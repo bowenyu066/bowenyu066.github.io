@@ -21,7 +21,7 @@ My resume is attached [here](https://bowenyu066.github.io/cv/).
 
 <div class="row">
     <div class="column" style="display: inline-block; vertical-align: top; width: 25%;">
-        <a href="/images/publications/DefectNet.pdf"><img src="/images/publications/DefectNet.pdf"></a>
+        <a href="/images/publications/DefectNet.png"><img src="/images/publications/DefectNet.png"></a>
     </div>
     <div class="column" style="display: inline-block; vertical-align: top; width: 70%; margin-left: 3%">
         <p style="display: inline-block; vertical-align: top; font-size: 16px; margin-bottom: 0;"><b>A Foundation Model for Non-Destructive Defect Identification from Vibrational Spectra</b></p>
