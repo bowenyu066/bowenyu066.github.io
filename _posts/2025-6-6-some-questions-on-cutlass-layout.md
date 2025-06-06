@@ -42,7 +42,7 @@ While the shape divisibility condition ensures that the every sub-shape (sorry f
 
 With this in mind, I once assumed that the left-distributive property holds for all layouts that satisfy the stride divisibility condition and shape divisibility condition. However, I was not able to prove this property mathematically. If left-distributive property holds, this suggests that the layout `A` should be linear with respect to the layout `B`. This is because of the following reasoning:
 
-Let $x$ be an arbitrary index in the domain of layout `B`, denoted as $(s_0, s_1, ..., s_n):(d_0, d_1, ..., d_n) \equiv (B_0, B_1, ..., B_n)$. To compute the corresponding output index of this layout, we first decompose the index `x` into its natural coordinates with respect to the shape of layout `B`, i.e., $(x_0, x_1, ..., x_n)$. Then, we apply to each coordinate the sub-layout `B_i` of `B`, and sum them up to get the final output index. This can be expressed as:
+Let \\(x\\) be an arbitrary index in the domain of layout `B`, denoted as \\((s_0, s_1, ..., s_n):(d_0, d_1, ..., d_n) \equiv (B_0, B_1, ..., B_n)\\). To compute the corresponding output index of this layout, we first decompose the index `x` into its natural coordinates with respect to the shape of layout `B`, i.e., \\((x_0, x_1, ..., x_n)\\). Then, we apply to each coordinate the sub-layout `B_i` of `B`, and sum them up to get the final output index. This can be expressed as:
 
 $$
 B(x) = \sum_{i=0}^{n} B_i(x_i) = \sum_{i=0}^{n} d_i \cdot x_i
