@@ -12,7 +12,7 @@ site_theme               : "default"
 title                    : "Bowen Yu's Homepage"
 title_separator          : "-"
 name                     : &name "Bowen Yu" 
-description              : &description "This is the homepage of Bowen Yu, an undergrad student majoring in Physics and Artificial Intelligence at Massachusetts Institute of Technology."
+description              : &description "This is the homepage of Bowen Yu, an undergrad majoring in Physics (8) and AI (6-4) at MIT."
 url                      : https://bowenyu066.github.io # the base hostname & protocol for your site e.g. "https://[your GitHub username].github.io"
 baseurl                  : "" # the subpath of your site, e.g. "/blog"
 repository               : "bowenyu066/bowenyu066.github.io"
@@ -25,7 +25,7 @@ author:
   avatar           : "me_3.jpeg"
   name             : "Bowen Yu"
   pronouns         : "Pronouns: he/him/his"
-  bio              : "This is the homepage of Bowen Yu, an undergrad student majoring in Physics and Artificial Intelligence at Massachusetts Institute of Technology."
+  bio              : "This is the homepage of Bowen Yu, an undergrad majoring in Physics (8) and AI (6-4) at MIT."
   location         : "Boston, MA, USA"
   employer         : "MIT"
   uri              : "bowenyu066.github.io"
@@ -88,7 +88,7 @@ publication_category:
 teaser                   :  # filename of teaser fallback teaser image placed in /images/, .e.g. "500x300.png"
 breadcrumbs              : false # true, false (default)
 words_per_minute         : 160
-future                   : false
+future                   : true
 read_more                : "disabled" # if enabled, adds "Read more" links to excerpts
 talkmap_link             : false      #change to true to add link to talkmap on talks page
 comments:
