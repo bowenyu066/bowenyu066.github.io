@@ -1,18 +1,19 @@
 ---
 title: Some Questions on Cutlass Layout
-date: 2025-6-6 11:43:00
+date: 2025-6-6 11:43:00 +0800
 permalink: /posts/2025/06/questions-on-cutlass-layout
 excerpt: "My own notes and questions on the layout of CUTLASS."
 tags: 
     - Computer Science
     - CUDA
     - CUTLASS
-categories: Computer Science
+categories: 
+    - Computer Science
 ---
 
 ## Layout Composition
 
-The composition of two layouts `A` and `B` is defined as the function composition of the two layouts, i.e., `(A o B)(x) = A(B(x))`. According to the [CUTLASS documentation](https://github.com/NVIDIA/cutlass/blob/main/media/docs/cpp/cute/02_layout_algebra.md), we can compute the composition of two layouts by making use of the left-distributive property: `A o (B1, B2, ..., Bn) = (A o B1, A o B2, ..., A o Bn)`, so long as `B` is injective. 
+The composition of two layouts `A` and `B` is defined as the function composition of the two layouts, i.e., `(A o B)(x) = A(B(x))`. According to the [CUTLASS documentation](https://github.com/NVIDIA/cutlass/blob/main/media/docs/cpp/cute/02_layout_algebra.md), we can compute the composition of two layouts by making use of the left-distributive property: `A o (B1, B2, ..., Bn) = (A o B1, A o B2, ..., A o Bn)`, so long as `B` is injective.
 
 Although not stated explicitly, the documentation suggests two other conditions are necessary for the left-distributive property to hold: the **stride divisibility condition** and the **shape divisibility condition**. The stride divisibility condition ensures that every sub-stride of the layout `B` is divisible by the shapes of the layout `A`. Here are some examples that satisfy the stride divisibility condition:
 
