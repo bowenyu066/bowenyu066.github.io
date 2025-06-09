@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+import argparse
+import os
+import shutil
+import subprocess
+import glob
+import sys
+
+LOCAL_DIR = 'local'
+POSTS_DIR = '_posts'
+SITE_DIR = '_site'
+ENCRYPTED_DIR = 'encrypted'
+
+def parse_front_matter(md_path):
+    """Extract YAML front matter lines from the markdown file."""
+    fm_lines = []
+    with open(md_path, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+    if not lines or not lines[0].strip() == '---':
+        return []
+    for line in lines[1:]:
+        fm_lines.append(line)
+        if line.strip() == '---':
+            break
+    return fm_lines
+
+def find_generated_html(base_name):
+    """Locate the built HTML in the _site directory."""
+    p1 = os.path.join(SITE_DIR, 'posts', '*', '*', base_name, 'index.html')
+    p2 = os.path.join(SITE_DIR, 'posts', '*', '*', f'{base_name}.html')
+    matches = glob.glob(p1) + glob.glob(p2)
+    if not matches:
+        print("Error: Generated HTML file not found.", file=sys.stderr)
+        sys.exit(1)
+    return matches[0]
+
+def main():
+    parser = argparse.ArgumentParser(description="Encrypt a Jekyll post with staticrypt")
+    parser.add_argument('md_file', help="Markdown filename in the local directory (e.g., my-post.md)")
+    parser.add_argument('password', help="Password to use for encryption")
+    args = parser.parse_args()
+
+    src_md = os.path.join(LOCAL_DIR, args.md_file)
+    if not os.path.isfile(src_md):
+        print(f"Error: {src_md} not found.", file=sys.stderr)
+        sys.exit(1)
+
+    # Read front matter for stub
+    front_matter = parse_front_matter(src_md)
+
+    # Move markdown to _posts
+    dest_md = os.path.join(POSTS_DIR, args.md_file)
+    shutil.copy2(src_md, dest_md)
+    print(f"Moved {src_md} -> {dest_md}")
+
+    # Build the site
+    print("Running Jekyll build...")
+    subprocess.run(['bundle', 'exec', 'jekyll', 'build'], check=True)
+
+    # Find HTML
+    base_name = os.path.splitext(args.md_file)[0]
+    print(base_name)
+    html_path = find_generated_html(base_name)
+    html_file_name = os.path.basename(html_path)
+    print(f"Found HTML at {html_path}, name: {html_file_name}")
+
+    # Ensure encrypted dir exists
+    os.makedirs(ENCRYPTED_DIR, exist_ok=True)
+    out_html = os.path.join(ENCRYPTED_DIR, f'{base_name}.html')
+    if os.path.exists(out_html):
+        print(f"Warning: {out_html} already exists. It will be overwritten.")
+        os.remove(out_html)
+
+    # Run staticrypt
+    print("Running staticrypt...")
+    subprocess.run([
+        'staticrypt', html_path,
+        '-p', args.password,
+        '-o', out_html
+    ], check=True)
+    os.rename(os.path.join(ENCRYPTED_DIR, f'{html_file_name}'), out_html)
+    print(f"Encrypted HTML -> {out_html}")
+
+    # Delete original markdown from _posts
+    os.remove(dest_md)
+    print(f"Removed unencrypted post: {dest_md}")
+
+    # Write stub markdown linking to encrypted file
+    # stub_lines = ['---\n'] + front_matter + ['\n']
+    # stub_lines.append('This post is password-protected. Click below to view:\n\n')
+    # stub_lines.append(f'👉 [Access Encrypted Version](/encrypted/{base_name}.html)\n')
+    # with open(dest_md, 'w', encoding='utf-8') as f:
+    #     f.writelines(stub_lines)
+    # print(f"Wrote stub post: {dest_md}")
+
+    print("All done!")
+
+if __name__ == '__main__':
+    main()
