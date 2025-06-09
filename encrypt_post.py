@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import glob
 import sys
+import getpass
 
 LOCAL_DIR = 'local'
 POSTS_DIR = '_posts'
@@ -37,7 +38,8 @@ def find_generated_html(base_name):
 def main():
     parser = argparse.ArgumentParser(description="Encrypt a Jekyll post with staticrypt")
     parser.add_argument('md_file', help="Markdown filename in the local directory (e.g., my-post.md)")
-    parser.add_argument('password', help="Password to use for encryption")
+    # parser.add_argument('password', help="Password to use for encryption")
+    password = getpass.getpass("🔒 Enter encryption password: ")
     args = parser.parse_args()
 
     src_md = os.path.join(LOCAL_DIR, args.md_file)
@@ -75,7 +77,7 @@ def main():
     print("Running staticrypt...")
     subprocess.run([
         'staticrypt', html_path,
-        '-p', args.password,
+        '-p', password,
         '-o', out_html
     ], check=True)
     os.rename(os.path.join(ENCRYPTED_DIR, f'{html_file_name}'), out_html)
