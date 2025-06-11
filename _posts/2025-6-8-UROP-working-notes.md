@@ -1,6 +1,6 @@
 ---
 title: UROP Working Notes
-date: 2025-6-10 00:38:00 +0800
+date: 2025-6-12 00:21:00 +0800
 permalink: /posts/2025/06/UROP-working-notes/
 excerpt: "My own notes and questions on the UROP project."
 tags: 
