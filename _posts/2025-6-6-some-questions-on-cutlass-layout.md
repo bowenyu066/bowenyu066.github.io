@@ -17,7 +17,8 @@ The composition of two layouts `A` and `B` is defined as the function compositio
 
 Although not stated explicitly, the documentation suggests two other conditions are necessary for the left-distributive property to hold: the **stride divisibility condition** and the **shape divisibility condition**. The stride divisibility condition ensures that every sub-stride of the layout `B` is divisible by the shapes of the layout `A`. Here are some examples that satisfy the stride divisibility condition:
 
-```
+```text
+
 (6,2) /  2 => (3,2)
 (6,2) /  3 => (2,2)
 (6,2) /  6 => (1,2)
@@ -30,7 +31,8 @@ Although not stated explicitly, the documentation suggests two other conditions 
 
 While the shape divisibility condition ensures that the every sub-shape (sorry for coining this term) of the layout `B` is divisible by the reduced shape of the layout `A` after applying the stride divisibility condition. Here are also some examples that satisfy the shape divisibility condition; notice, the shapes on the left hand side correspond to the ones after dividing the strides:
 
-```
+```text
+
 (6,2) %  2 => (2,1)
 (6,2) %  3 => (3,1)
 (6,2) %  6 => (6,1)
@@ -66,6 +68,7 @@ This means that the layout `A` is indeed linear with respect to the output of ea
 The documentation does not provide a proof of this property. Therefore, I decided to first test it with some examples that satisfy the stride divisibility condition and shape divisibility condition, in hope of obtaining some insights. Here's a function that I wrote to test the built-in `cute::composition` function in CUTLASS:
 
 ```cpp
+
 #include <cute/tensor.hpp>
 #include <cute/util/print.hpp>
 using namespace cute;
@@ -90,21 +93,24 @@ bool test_composition(Layout<Shape1, Stride1> const& a, Layout<Shape2, Stride2> 
 
 The `cute::composition` provided automatically checks the stride divisibility condition and shape divisibility condition, so I don't need to worry about that. To my surprise, I did find some counterexamples where the left-distributive property does not hold. Here are some examples that I tested:
 
-```
+```text
+
 a: (_10,_2):(_16,_4)
 b: (_4,_5):(_5,_2)
 c: ((_2,_2),_5):((_80,_4),_32)
 Mismatch at index 13: c(13) = 176, a(b(13)) = 20
 ```
 
-```
+```text
+
 a: (_10,_2):(_16,_4)
 b: (_2,_5):(_5,_2)
 c: (_2,_5):(_80,_32)
 Mismatch at index 7: c(7) = 176, a(b(7)) = 20
 ```
 
-```
+```text
+
 a: (_6,_2):(_8,_2)
 b: (_4,_3):(_3,_2)
 c: ((_2,_2),_3):((_24,_2),_16)
@@ -113,42 +119,48 @@ Mismatch at index 9: c(9) = 56, a(b(9)) = 10
 
 Of course, there are also many examples where the property does hold:
 
-```
+```text
+
 a: (_6,_2):(_8,_2)
 b: (_4,_3):(_3,_1)
 c: ((_2,_2),_3):((_24,_2),_8)
 Composition test passed!
 ```
 
-```
+```text
+
 a: (_10,_2):(_16,_4)
 b: (_10,_2):(_2,_1)
 c: ((_5,_2),_2):((_32,_4),_16)
 Composition test passed!
 ```
 
-```
+```text
+
 a: (_10,_2):(_16,_4)
 b: (_5,_4):(_1,_5)
 c: (_5,(_2,_2)):(_16,(_80,_4))
 Composition test passed!
 ```
 
-```
+```text
+
 a: (_10,_2):(_16,_4)
 b: (_5,_2):(_2,_1)
 c: (_5,_2):(_32,_16)
 Composition test passed!
 ```
 
-```
+```text
+
 a: (_10,_2):(_16,_4)
 b: (_4,_5):(_5,_1)
 c: ((_2,_2),_5):((_80,_4),_16)
 Composition test passed!
 ```
 
-```
+```text
+
 a: (_10,_2):(_16,_4)
 b: (_2,_10):(_10,_2)
 c: (_2,(_5,_2)):(_4,(_32,_4))

@@ -209,6 +209,11 @@ kramdown:
   toc_levels: 1..6
   smart_quotes: lsquo,rsquo,ldquo,rdquo
   enable_coderay: false
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    block:
+      line_numbers: false      # turn *off* table-style line numbers
+      wrap: true              # force the simple <pre><code> wrapper
 
 
 # These settings control the types of collections used by the template
