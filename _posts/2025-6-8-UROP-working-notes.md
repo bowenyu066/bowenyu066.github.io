@@ -15,4 +15,4 @@ categories:
 
 This post is password-protected. Click below to view:
 
-👉 [Access Encrypted Version](https://bowenyu066.github.io/encrypted/UROP-working-notes-real.html)
+👉 [Access Encrypted Version](https://bowenyu066.github.io/encrypted/UROP-working-notes.html)

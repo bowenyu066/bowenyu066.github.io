@@ -55,37 +55,39 @@ def main():
     shutil.copy2(src_md, dest_md)
     print(f"Moved {src_md} -> {dest_md}")
 
-    # Build the site
-    print("Running Jekyll build...")
-    subprocess.run(['bundle', 'exec', 'jekyll', 'build'], check=True)
+    try:
+        # Build the site
+        print("Running Jekyll build...")
+        subprocess.run(['bundle', 'exec', 'jekyll', 'build'], check=True)
 
-    # Find HTML
-    base_name = os.path.splitext(args.md_file)[0]
-    print(base_name)
-    html_path = find_generated_html(base_name)
-    html_file_name = os.path.basename(html_path)
-    print(f"Found HTML at {html_path}, name: {html_file_name}")
+        # Find HTML
+        base_name = os.path.splitext(args.md_file)[0]
+        print(base_name)
+        html_path = find_generated_html(base_name)
+        html_file_name = os.path.basename(html_path)
+        print(f"Found HTML at {html_path}, name: {html_file_name}")
 
-    # Ensure encrypted dir exists
-    os.makedirs(ENCRYPTED_DIR, exist_ok=True)
-    out_html = os.path.join(ENCRYPTED_DIR, f'{base_name}.html')
-    if os.path.exists(out_html):
-        print(f"Warning: {out_html} already exists. It will be overwritten.")
-        os.remove(out_html)
+        # Ensure encrypted dir exists
+        os.makedirs(ENCRYPTED_DIR, exist_ok=True)
+        out_html = os.path.join(ENCRYPTED_DIR, f'{base_name}.html')
+        if os.path.exists(out_html):
+            print(f"Warning: {out_html} already exists. It will be overwritten.")
+            os.remove(out_html)
 
-    # Run staticrypt
-    print("Running staticrypt...")
-    subprocess.run([
-        'staticrypt', html_path,
-        '-p', password,
-        '-o', out_html
-    ], check=True)
-    os.rename(os.path.join(ENCRYPTED_DIR, f'{html_file_name}'), out_html)
-    print(f"Encrypted HTML -> {out_html}")
-
-    # Delete original markdown from _posts
-    os.remove(dest_md)
-    print(f"Removed unencrypted post: {dest_md}")
+        # Run staticrypt
+        print("Running staticrypt...")
+        subprocess.run([
+            'staticrypt', html_path,
+            '-p', password,
+            '-o', out_html
+        ], check=True)
+        os.rename(os.path.join(ENCRYPTED_DIR, f'{html_file_name}'), out_html)
+        print(f"Encrypted HTML -> {out_html}")
+    
+    finally:
+        # Delete original markdown from _posts
+        os.remove(dest_md)
+        print(f"Removed unencrypted post: {dest_md}")
 
     # Write stub markdown linking to encrypted file
     # stub_lines = ['---\n'] + front_matter + ['\n']
