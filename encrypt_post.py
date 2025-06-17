@@ -12,6 +12,19 @@ POSTS_DIR = '_posts'
 SITE_DIR = '_site'
 ENCRYPTED_DIR = 'encrypted'
 
+def process_markdown(md_path):
+    """Process the markdown file before encryption. Right now, the only
+    processing is to convert all inline LaTeX formulas (enclosed by $...$)
+    into double dollar signs ($$...$$) for display math."""
+    with open(md_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    # Convert inline LaTeX to display math
+    content = content.replace('$$', '$')
+    content = content.replace('$', '$$')
+    with open(md_path, 'w', encoding='utf-8') as f:
+        f.write(content)
+    # print(f"Processed markdown: {md_path}")
+
 def parse_front_matter(md_path):
     """Extract YAML front matter lines from the markdown file."""
     fm_lines = []
@@ -54,6 +67,9 @@ def main():
     dest_md = os.path.join(POSTS_DIR, args.md_file)
     shutil.copy2(src_md, dest_md)
     print(f"Moved {src_md} -> {dest_md}")
+    
+    # Process the markdown file
+    process_markdown(dest_md)
 
     try:
         # Build the site
