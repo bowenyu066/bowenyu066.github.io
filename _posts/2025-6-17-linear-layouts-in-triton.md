@@ -43,6 +43,7 @@ CTA layout 的目的是将硬件资源的布局映射到对应的 logical tensor
 多个 CTA block 可以对应同一块 logical tensor block。在转换为 linear layout 时，函数将默认检查在每个维度上的 CTA block 数量是否是 logical tensor block 数量的整数倍数。
 
 ```cpp
+
 int rank = layout.getCTAOrder().size();
 for (int i = 0; i < rank; i++) {
     // Start with the most minor dimension, which is order[0].
