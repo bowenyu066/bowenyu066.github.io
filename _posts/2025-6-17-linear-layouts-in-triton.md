@@ -118,8 +118,8 @@ auto out2 = mlir::StringAttr::get(&context, "out2");
 LinearLayout layout(
     /* bases */
     {
-        {in1, {{0, 1}, {0, 2}}}, // L(in1=1)={0,1}, L(in1=2)={0,2}
-        {in2, {{0, 4}, {0, 8}, {1, 1}}} // L(in2=1)={0,4}, L(in2=2)={0,8}, L(in2=4)={1,1}
+        {in1, { {0, 1}, {0, 2}}}, // L(in1=1)={0,1}, L(in1=2)={0,2}
+        {in2, { {0, 4}, {0, 8}, {1, 1}}} // L(in2=1)={0,4}, L(in2=2)={0,8}, L(in2=4)={1,1}
     },
     /* outDimNames */
     {out1, out2}
@@ -170,7 +170,7 @@ auto outDim1 = mlir::StringAttr::get(&context, "out1");
 LinearLayout layout(
     /* bases */
     {
-        {inDim1, {{1}, {4}}} // L(in1=1) = {1}, L(in1=2) = {4}
+        {inDim1, { {1}, {4}}} // L(in1=1) = {1}, L(in1=2) = {4}
     },
     /* outDims */
     {
