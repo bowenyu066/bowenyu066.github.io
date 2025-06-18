@@ -38,10 +38,12 @@ $$
 对于满足上述线性性质的 linear layout $$\mathcal{L}$$，我们只需要部分的输入输出坐标对 $$x_k \mapsto y_k$$，就可以利用线性性质求出任意的输入输出坐标对。最简单也是最自然的输入坐标即为 2 的幂次的整数 $$x_k = 2^k=(00...010...0)_2$$。由于 xor 运算是无进位加法，任意输入坐标 $$x_k$$ 都可以被表示为若干个 2 的幂次的整数的异或和，相应的输出坐标 $$y_k$$ 也可以被表示为若干个输出坐标的异或和。以下面例子为例，输入坐标 $$(t, w)$$ 均在 $$[0, 3]$$ 范围内，给出了 $$(0, 1)$$、$$(0, 2)$$、$$(1, 0)$$ 和 $$(2, 0)$$ 四个输入坐标的输出坐标：
 
 $$
-\mathcal{L} (0, 1) = (0, 1) \\
-\mathcal{L} (0, 2) = (0, 2) \\
-\mathcal{L} (1, 0) = (1, 1) \\
-\mathcal{L} (2, 0) = (2, 2) \\
+\begin{align*}
+  \mathcal{L} (0, 1) = (0, 1) \\
+  \mathcal{L} (0, 2) = (0, 2) \\
+  \mathcal{L} (1, 0) = (1, 1) \\
+  \mathcal{L} (2, 0) = (2, 2) \\
+\end{align*}
 $$
 
 任意输入坐标 $$(t, w)$$ 都可以表示为 $$t = 2^0 \cdot t_0 \oplus 2^1 \cdot t_1$$ 和 $$w = 2^0 \cdot w_0 \oplus 2^1 \cdot w_1$$，其中 $$t_i, w_i \in \{0, 1\}$$。这样，我们就能计算出任意输入坐标对应的输出坐标：
@@ -71,6 +73,7 @@ Triton 里最基本的 linear layout 有两个：identity layout 和 zero layout
 这两种最基本的 linear layout 可以通过乘法构造出更复杂的 linear layout。除此以外，Triton 提供了方便的 constructor 来构造 linear layout。
 
 - `LinearLayout(BasesT, ArrayRef<StringAttr>)`：通过一组完备的基向量输入输出对来构造 linear layout。这种构造会自动检查该 linear layout 是否为满射（surjective），即是否能覆盖所有的 logical tensor 坐标。
+
 ```cpp
 
 #include "mlir/IR/MLIRContext.h"
@@ -101,7 +104,9 @@ LinearLayout layout(bases, outDimNames);
 // layout.getOutDimSize("out1") would be 8 (next power of 2 >= 5)
 // layout.getOutDimSize("out2") would be 4 (next power of 2 >= 2)
 ```
+
 - 可以使用 C++ initializer lists ({...}) 来简化初始化：
+  
 ```cpp
 
 #include "mlir/IR/MLIRContext.h"
@@ -125,7 +130,9 @@ LinearLayout layout(
     {out1, out2}
 );
 ```
+
 - `LinearLayout(BasesT, ArrayRef<pair<StringAttr, int32_t>>, bool)`：同样通过一组完备的基向量输入输出对来构造 linear layout，并且可以选择是否检查该 linear layout 是否为满射。由于非满射情况下无法自动推断出输出维度的大小，因此需要手动指定输出维度的大小。
+
 ```cpp
 
 #include "mlir/IR/MLIRContext.h"
@@ -155,6 +162,7 @@ std::vector<std::pair<mlir::StringAttr, int32_t>> outDims = {
 // Create the layout, specifying that it doesn't need to be surjective.
 LinearLayout layout(bases, outDims, /*requireSurjective=*/false);
 ```
+
 - 同样，可以使用 C++ initializer lists ({...}) 来简化初始化：
 ```cpp
 
@@ -188,8 +196,10 @@ LinearLayout layout(
 - 输入和输出的名称均不重合：直接将两个 linear layout 的输入输出坐标进行拼接。
 
   $$
-  \mathcal{L}_1(x_1; \text{`i1'}; \text{`o1'}) * \mathcal{L}_2(x_2; \text{`i2'}; \text{`o2'})\mapsto \mathcal{L}(x_1, x_2; \text{`i1'}, \text{`i2'}; \text{`o1'}, \text{`o2'}) \\
-  \text{such that } \mathcal{L}(x_1, x_2) = (\mathcal{L}_1(x_1), \mathcal{L}_2(x_2))
+  \begin{align*}
+    &\mathcal{L}_1(x_1; \text{`i1'}; \text{`o1'}) * \mathcal{L}_2(x_2; \text{`i2'}; \text{`o2'})\mapsto \mathcal{L}(x_1, x_2; \text{`i1'}, \text{`i2'}; \text{`o1'}, \text{`o2'}) \\
+    &\text{such that } \mathcal{L}(x_1, x_2) = (\mathcal{L}_1(x_1), \mathcal{L}_2(x_2))
+  \end{align*}
   $$
 
   如下图所示，图示中所有的方格代表二进制表示的一个 bit，$$\mathcal{L}_1$$ 和 $$\mathcal{L}_2$$ 的输入输出坐标分别用不同的颜色表示。可以看到，$$\mathcal{L}_1 * \mathcal{L}_2$$ 的输入输出坐标仅仅只是 $$\mathcal{L}_1$$ 和 $$\mathcal{L}_2$$ 的输入输出坐标的拼接。
@@ -199,8 +209,10 @@ LinearLayout layout(
 - 输入的名称重合，输出的名称不重合：合成的 layout 将输入合成为一个通道，将输出拼接。
 
   $$
-  \mathcal{L}_1(x_1; \text{`i'}; \text{`o1'}) * \mathcal{L}_2(x_2; \text{`i'}; \text{`o2'})\mapsto \mathcal{L}(x; \text{`i'}; \text{`o1'}, \text{`o2'}) \\
-  \text{such that } \mathcal{L}(x) = (\mathcal{L}_1(x_1), \mathcal{L}_2(x_2)), \text{ where } x = \text{concat}(x_2, x_1) 
+  \begin{align*}
+    &\mathcal{L}_1(x_1; \text{`i'}; \text{`o1'}) * \mathcal{L}_2(x_2; \text{`i'}; \text{`o2'})\mapsto \mathcal{L}(x; \text{`i'}; \text{`o1'}, \text{`o2'}) \\
+    &\text{such that } \mathcal{L}(x) = (\mathcal{L}_1(x_1), \mathcal{L}_2(x_2)), \text{ where } x = \text{concat}(x_2, x_1) 
+  \end{align*}
   $$
 
   如下图所示，将输入合成为一个通道时，乘号前 layout（$$\mathcal{L}_1$$）的输入放在低位，乘号后 layout（$$\mathcal{L}_2$$）的输入放在高位。
@@ -216,7 +228,7 @@ LinearLayout layout(
 
 1. $$\mathcal{L}(x) = x / 4$$，$$x \in [0, 8)$$；该 layout 可视作 `zeros1D(4, "i", "o") * identity1D(2, "i", "o")`，因其等效于直接舍弃 $$x$$ 的低两位。
 
-2. $$\mathcal{L}(x) = x \text{ \% } 4$$，$$x \in [0, 8)$$；该 layout 可视作 `identity1D(4, "i", "o") * zeros1D(2, "i", "o")`，因其等效于直接舍弃 $$x$$ 的最高位。
+2. $$\mathcal{L}(x) = x \text{  } 4$$，$$x \in [0, 8)$$；该 layout 可视作 `identity1D(4, "i", "o") * zeros1D(2, "i", "o")`，因其等效于直接舍弃 $$x$$ 的最高位。
 
 3. $$\mathcal{L}(x) = (x \text{ \% } 4,\  x / 4)$$，$$x \in [0, 32)$$；该 layout 可视作 `identity1D(4, "i", "o1") * identity1D(8, "i", "o2")`，因其等效于直接将 $$x$$ 的低两位和高三位分别作为两个输出。
 
