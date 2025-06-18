@@ -12,6 +12,24 @@ POSTS_DIR = '_posts'
 SITE_DIR = '_site'
 ENCRYPTED_DIR = 'encrypted'
 
+def inline_latex_to_display(content):
+    """Convert inline LaTeX formulas (enclosed by $...$) to display math
+    (enclosed by $$...$$)."""
+    lines = content.splitlines()
+    for i, line in enumerate(lines):
+        # Replace single $ with double $$ for inline LaTeX
+        lines[i] = line.replace('$', '$$')
+    return '\n'.join(lines)
+
+def replace_percent_signs(content):
+    """Replace percent signs (\%) with original percent signs
+    in LaTeX content."""
+    lines = content.splitlines()
+    for i, line in enumerate(lines):
+        # Replace \% with %
+        lines[i] = line.replace('\\%', '%')
+    return '\n'.join(lines)
+
 def process_markdown(md_path):
     """Process the markdown file before encryption. Right now, the only
     processing is to convert all inline LaTeX formulas (enclosed by $...$)
@@ -19,8 +37,8 @@ def process_markdown(md_path):
     with open(md_path, 'r', encoding='utf-8') as f:
         content = f.read()
     # Convert inline LaTeX to display math
-    content = content.replace('$$', '$')
-    content = content.replace('$', '$$')
+    content = inline_latex_to_display(content)
+    content = replace_percent_signs(content)
     with open(md_path, 'w', encoding='utf-8') as f:
         f.write(content)
     # print(f"Processed markdown: {md_path}")
