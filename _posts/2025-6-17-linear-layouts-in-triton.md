@@ -71,115 +71,115 @@ Triton 里最基本的 linear layout 有两个：identity layout 和 zero layout
 这两种最基本的 linear layout 可以通过乘法构造出更复杂的 linear layout。除此以外，Triton 提供了方便的 constructor 来构造 linear layout。
 
 - `LinearLayout(BasesT, ArrayRef<StringAttr>)`：通过一组完备的基向量输入输出对来构造 linear layout。这种构造会自动检查该 linear layout 是否为满射（surjective），即是否能覆盖所有的 logical tensor 坐标。
-  ```cpp
+```cpp
 
-  #include "mlir/IR/MLIRContext.h"
-  #include "llvm/ADT/MapVector.h"
-  #include "LinearLayout.h"
+#include "mlir/IR/MLIRContext.h"
+#include "llvm/ADT/MapVector.h"
+#include "LinearLayout.h"
 
-  // Setup necessary MLIR components
-  mlir::MLIRContext context;
-  auto inDim1 = mlir::StringAttr::get(&context, "in1");
-  auto outDim1 = mlir::StringAttr::get(&context, "out1");
-  auto outDim2 = mlir::StringAttr::get(&context, "out2");
+// Setup necessary MLIR components
+mlir::MLIRContext context;
+auto inDim1 = mlir::StringAttr::get(&context, "in1");
+auto outDim1 = mlir::StringAttr::get(&context, "out1");
+auto outDim2 = mlir::StringAttr::get(&context, "out2");
 
-  // Create a layout by defining the bases directly.
-  using BasesT = llvm::MapVector<mlir::StringAttr,
-                              std::vector<std::vector<int32_t>>>;
-  BasesT bases;
-  bases[inDim1] = {
-      {1, 0}, // L(in1=1) = (out1=1, out2=0)
-      {5, 1}, // L(in1=2) = (out1=5, out2=1)
-      {2, 2}  // L(in1=4) = (out1=2, out2=2)
-  };
+// Create a layout by defining the bases directly.
+using BasesT = llvm::MapVector<mlir::StringAttr,
+                            std::vector<std::vector<int32_t>>>;
+BasesT bases;
+bases[inDim1] = {
+    {1, 0}, // L(in1=1) = (out1=1, out2=0)
+    {5, 1}, // L(in1=2) = (out1=5, out2=1)
+    {2, 2}  // L(in1=4) = (out1=2, out2=2)
+};
 
-  std::vector<mlir::StringAttr> outDimNames = {outDim1, outDim2};
+std::vector<mlir::StringAttr> outDimNames = {outDim1, outDim2};
 
-  // This constructor infers output sizes and requires the map to be surjective.
-  LinearLayout layout(bases, outDimNames);
+// This constructor infers output sizes and requires the map to be surjective.
+LinearLayout layout(bases, outDimNames);
 
-  // layout.getOutDimSize("out1") would be 8 (next power of 2 >= 5)
-  // layout.getOutDimSize("out2") would be 4 (next power of 2 >= 2)
-  ```
-  - 可以使用 C++ initializer lists ({...}) 来简化初始化：
-  ```cpp
+// layout.getOutDimSize("out1") would be 8 (next power of 2 >= 5)
+// layout.getOutDimSize("out2") would be 4 (next power of 2 >= 2)
+```
+- 可以使用 C++ initializer lists ({...}) 来简化初始化：
+```cpp
 
-  #include "mlir/IR/MLIRContext.h"
-  #include "LinearLayout.h"
+#include "mlir/IR/MLIRContext.h"
+#include "LinearLayout.h"
 
-  // Setup
-  mlir::MLIRContext context;
-  auto in1 = mlir::StringAttr::get(&context, "in1");
-  auto in2 = mlir::StringAttr::get(&context, "in2");
-  auto out1 = mlir::StringAttr::get(&context, "out1");
-  auto out2 = mlir::StringAttr::get(&context, "out2");
+// Setup
+mlir::MLIRContext context;
+auto in1 = mlir::StringAttr::get(&context, "in1");
+auto in2 = mlir::StringAttr::get(&context, "in2");
+auto out1 = mlir::StringAttr::get(&context, "out1");
+auto out2 = mlir::StringAttr::get(&context, "out2");
 
-  // Use the initializer-list friendly constructor.
-  LinearLayout layout(
-      /* bases */
-      {
-          {in1, { {0, 1}, {0, 2} } }, // L(in1=1)={0,1}, L(in1=2)={0,2}
-          {in2, { {0, 4}, {0, 8}, {1, 1} } } // L(in2=1)={0,4}, L(in2=2)={0,8}, L(in2=4)={1,1}
-      },
-      /* outDimNames */
-      {out1, out2}
-  );
-  ```
+// Use the initializer-list friendly constructor.
+LinearLayout layout(
+    /* bases */
+    {
+        {in1, {{0, 1}, {0, 2}}}, // L(in1=1)={0,1}, L(in1=2)={0,2}
+        {in2, {{0, 4}, {0, 8}, {1, 1}}} // L(in2=1)={0,4}, L(in2=2)={0,8}, L(in2=4)={1,1}
+    },
+    /* outDimNames */
+    {out1, out2}
+);
+```
 - `LinearLayout(BasesT, ArrayRef<pair<StringAttr, int32_t>>, bool)`：同样通过一组完备的基向量输入输出对来构造 linear layout，并且可以选择是否检查该 linear layout 是否为满射。由于非满射情况下无法自动推断出输出维度的大小，因此需要手动指定输出维度的大小。
-  ```cpp
+```cpp
 
-  #include "mlir/IR/MLIRContext.h"
-  #include "llvm/ADT/MapVector.h"
-  #include "LinearLayout.h"
+#include "mlir/IR/MLIRContext.h"
+#include "llvm/ADT/MapVector.h"
+#include "LinearLayout.h"
 
-  // Setup necessary MLIR components
-  mlir::MLIRContext context;
-  auto inDim1 = mlir::StringAttr::get(&context, "in1");
-  auto outDim1 = mlir::StringAttr::get(&context, "out1");
+// Setup necessary MLIR components
+mlir::MLIRContext context;
+auto inDim1 = mlir::StringAttr::get(&context, "in1");
+auto outDim1 = mlir::StringAttr::get(&context, "out1");
 
-  // Create a non-surjective layout with explicit output sizes.
-  using BasesT = llvm::MapVector<mlir::StringAttr,
-                                std::vector<std::vector<int32_t>>>;
-  BasesT bases;
-  bases[inDim1] = {
-      {1}, // L(in1=1) = (out1=1)
-      {4}  // L(in1=2) = (out1=4)
-  };
+// Create a non-surjective layout with explicit output sizes.
+using BasesT = llvm::MapVector<mlir::StringAttr,
+                              std::vector<std::vector<int32_t>>>;
+BasesT bases;
+bases[inDim1] = {
+    {1}, // L(in1=1) = (out1=1)
+    {4}  // L(in1=2) = (out1=4)
+};
 
-  // Explicitly define the output dimension and its size.
-  std::vector<std::pair<mlir::StringAttr, int32_t>> outDims = {
-      {outDim1, 32} // The codomain for out1 is [0, 32), even though we only
-                    // produce values up to 5.
-  };
+// Explicitly define the output dimension and its size.
+std::vector<std::pair<mlir::StringAttr, int32_t>> outDims = {
+    {outDim1, 32} // The codomain for out1 is [0, 32), even though we only
+                  // produce values up to 5.
+};
 
-  // Create the layout, specifying that it doesn't need to be surjective.
-  LinearLayout layout(bases, outDims, /*requireSurjective=*/false);
-  ```
-  - 同样，可以使用 C++ initializer lists ({...}) 来简化初始化：
-  ```cpp
+// Create the layout, specifying that it doesn't need to be surjective.
+LinearLayout layout(bases, outDims, /*requireSurjective=*/false);
+```
+- 同样，可以使用 C++ initializer lists ({...}) 来简化初始化：
+```cpp
 
-  #include "mlir/IR/MLIRContext.h"
-  #include "path/to/your/LinearLayout.h"
+#include "mlir/IR/MLIRContext.h"
+#include "path/to/your/LinearLayout.h"
 
-  // Setup
-  mlir::MLIRContext context;
-  auto inDim1 = mlir::StringAttr::get(&context, "in1");
-  auto outDim1 = mlir::StringAttr::get(&context, "out1");
+// Setup
+mlir::MLIRContext context;
+auto inDim1 = mlir::StringAttr::get(&context, "in1");
+auto outDim1 = mlir::StringAttr::get(&context, "out1");
 
-  //  Use the initializer-list friendly constructor for a non-surjective layout.
-  LinearLayout layout(
-      /* bases */
-      {
-          {inDim1, { {1}, {4} } } // L(in1=1) = {1}, L(in1=2) = {4}
-      },
-      /* outDims */
-      {
-          {outDim1, 32} // Explicitly specify size of out1 is 32.
-      },
-      /* requireSurjective */
-      false
-  );
-  ```
+//  Use the initializer-list friendly constructor for a non-surjective layout.
+LinearLayout layout(
+    /* bases */
+    {
+        {inDim1, {{1}, {4}}} // L(in1=1) = {1}, L(in1=2) = {4}
+    },
+    /* outDims */
+    {
+        {outDim1, 32} // Explicitly specify size of out1 is 32.
+    },
+    /* requireSurjective */
+    false
+);
+```
 
 ### Multiplication
 
