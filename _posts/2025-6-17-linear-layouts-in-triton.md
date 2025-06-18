@@ -118,8 +118,8 @@ Triton 里最基本的 linear layout 有两个：identity layout 和 zero layout
   LinearLayout layout(
       /* bases */
       {
-          {in1, {{0, 1}, {0, 2}}}, // L(in1=1)={0,1}, L(in1=2)={0,2}
-          {in2, {{0, 4}, {0, 8}, {1, 1}}} // L(in2=1)={0,4}, L(in2=2)={0,8}, L(in2=4)={1,1}
+          {in1, { {0, 1}, {0, 2} } }, // L(in1=1)={0,1}, L(in1=2)={0,2}
+          {in2, { {0, 4}, {0, 8}, {1, 1} } } // L(in2=1)={0,4}, L(in2=2)={0,8}, L(in2=4)={1,1}
       },
       /* outDimNames */
       {out1, out2}
@@ -170,7 +170,7 @@ Triton 里最基本的 linear layout 有两个：identity layout 和 zero layout
   LinearLayout layout(
       /* bases */
       {
-          {inDim1, {{1}, {4}}} // L(in1=1) = {1}, L(in1=2) = {4}
+          {inDim1, { {1}, {4} } } // L(in1=1) = {1}, L(in1=2) = {4}
       },
       /* outDims */
       {
@@ -248,7 +248,7 @@ CTA layout 的目的是将硬件资源的布局映射到对应的 logical tensor
 多个 CTA block 可以对应同一块 logical tensor block。比如，如果 `CTAsPerCGA[0] = 8`，`CTASplitNum[0] = 2`，则 CTA 在第 0 个维度上被分成 8 份，交替映射到 logical tensor 被分成的 2 份上，分配的方式为 (0, 1, 0, 1, 0, 1, 0, 1)。从这个例子也可以看出，`CTAsPerCGA` 和 `CTASplitNum` 的每个维度上的值必须是整数倍数关系。在转换为 linear layout 时，函数将默认检查上述条件。在该条件满足时，cgaLayout 的数学表达式可以写为：
 
 $$
-\mathcal{L}(x_0, x_1, \cdots, x_n)= \left( x_0 \text{ \% split[0]}, x_1 \text{ \% split[1]}, \cdots, x_n \text{ \% split[$$n$$]}    \right)
+\mathcal{L}(x_0, x_1, \cdots, x_n)= \left( x_0 \text{ \% split[0]}, x_1 \text{ \% split[1]}, \cdots, x_n \text{ \% split} [n]   \right)
 $$
 
 其中，$$(x_0, x_1, \cdots, x_n)$$ 是 CTA block 的坐标，坐标限定在 `CTAsPerCGA` 给定的范围内；$$\text{split}[i]$$ 是 `CTASplitNum` 在第 $$i$$ 个维度上的值。
