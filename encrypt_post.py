@@ -6,6 +6,7 @@ import subprocess
 import glob
 import sys
 import getpass
+import time
 
 POSTS_DIR = '_posts'
 SITE_DIR = '_site'
@@ -100,7 +101,8 @@ def main():
 
     # Move markdown to _posts
     file_name = os.path.basename(src_md)
-    dest_md = os.path.join(POSTS_DIR, file_name)
+    file_name_date = time.strftime('%Y-%m-%d-', time.localtime()) + file_name # Prepend date to filename
+    dest_md = os.path.join(POSTS_DIR, file_name_date)
     shutil.copy2(src_md, dest_md)
     print(f"Moved {src_md} -> {dest_md}")
     

@@ -11,4 +11,4 @@ categories:
 
 This post is password-protected. Click below to view:
 
-👉 [Access Encrypted Version](https://bowenyu066.github.io/encrypted/linear-layouts-in-triton.html)
+👉 [Access Encrypted Version](https://bowenyu066.github.io/encrypted/triton-linear-layouts.html)
