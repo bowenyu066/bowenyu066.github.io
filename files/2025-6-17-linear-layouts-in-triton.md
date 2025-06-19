@@ -656,8 +656,22 @@ MMA (Matrix Multiply-Accumulate) 是 NVIDIA GPU 上的矩阵乘法指令。与�
 
 ### Slice Layouts
 
-Slice layouts 可以看作是 distributed layout 的一种变体。
+Slice layouts 可以看作是 distributed layout 的一种变体。给定一个 layout 矩阵 $L$（称作 parent layout）和 slicing 的维度 `dim`，沿着 `dim` 收缩，可以将 $L$ 的维度减一：
 
+```text
+L_parent =  [0  1  2  3 ]
+            [4  5  6  7 ]
+            [8  9  10 11]
+            [12 13 14 15]
+--sqweeze in dim=0-->
+L = [{0, 4, 8, 12}, {1, 5, 9, 13}, {2, 6, 10, 14}, {3, 7, 11, 15}]
+```
+
+则任意的 logical tensor $T$ 分布到 threads 上的方式由收缩后的 layout $L$ 给出；如果在某方向上 logical tensor 的长度相比于 layout $L$ 有富余或者长度不够，则将使用完全类似于 distributed layout 的规则，进行 broadcasting 或 wrapping around。比如，对于上面的例子，假设 logical tensor $T$ 的 shape 为 $[1, 8]$，则其分布到 threads 上的方式为：
+
+```text
+L(T) = [{0, 4, 8, 12}, {1, 5, 9, 13}, {2, 6, 10, 14}, {3, 7, 11, 15}, {0, 4, 8, 12}, {1, 5, 9, 13}, {2, 6, 10, 14}, {3, 7, 11, 15}]
+```
 
 [^1]: https://www.lei.chat/posts/triton-linear-layout-concept/
 [^2]: https://github.com/triton-lang/triton/blob/main/include/triton/Dialect/TritonGPU/IR/TritonGPUAttrDefs.td
