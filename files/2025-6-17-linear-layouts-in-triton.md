@@ -396,7 +396,7 @@ for (int logRow = 0; logRow < llvm::Log2_32(numRows); logRow++) {
   bases2D.push_back({row, (vec * ((row / perPhase) % maxPhase)) % numCols});
 }
 LinearLayout ctaLayout =
-    LinearLayout({{S("offset"), bases2D}}, {rowDimName, colDimName});
+    LinearLayout({ {S("offset"), bases2D}}, {rowDimName, colDimName});
 
 // Add the remaining dimensions
 for (int i = 2; i < rank; i++) {
@@ -607,8 +607,8 @@ MFMA (Matrix Fused Multiply-Add) 是 AMD CDNA 系 GPU 上的一个特殊的矩�
 StringAttr kRegister = S("register");
 StringAttr kLane = S("lane");
 auto tileLayout = LinearLayout(
-        {{kRegister, {{0, 1}, {0, 2}, {0, 8}, /*gap*/ {0, 16}}},
-         {kLane, {{1, 0}, {2, 0}, {4, 0}, {8, 0}, {16, 0}, /*gap*/ {0, 4}}}},
+        { {kRegister, { {0, 1}, {0, 2}, {0, 8}, /*gap*/ {0, 16}}},
+         {kLane, { {1, 0}, {2, 0}, {4, 0}, {8, 0}, {16, 0}, /*gap*/ {0, 4}}}},
         {outDimNames[order[0]], outDimNames[order[1]]})
 ```
 
@@ -639,8 +639,8 @@ auto tileLayout = LinearLayout(
 
 ```cpp
 auto tileLayout = LinearLayout(
-        {{kRegister, {{0, 1}, {0, 2}}},
-         {kLane, {{1, 0}, {2, 0}, {4, 0}, {8, 0}, /*gap*/ {0, 4}, {0, 8}}}},
+        { {kRegister, { {0, 1}, {0, 2}}},
+         {kLane, { {1, 0}, {2, 0}, {4, 0}, {8, 0}, /*gap*/ {0, 4}, {0, 8}}}},
         {outDimNames[order[0]], outDimNames[order[1]]})
 ```
 
