@@ -264,6 +264,8 @@ $$
 如果每个维度上的 `CTAsPerCGA` 和 `CTASplitNum` 都是 2 的幂次，则可以将 cgaLayout 转换为 linear layout。这时，cgaLayout 的输入坐标 $(x_0, x_1, \cdots, x_n)$ 每一个都可以用二进制来表示，再按照 `CTAOrder` 给出的顺序从低位到高位排列。比如，如果 `CTAsPerCGA = [2, 4]`，`CTASplitNum = [2, 4]`，`CTAOrder = [1, 0]`，则输入坐标 $(x_0, x_1)$ 可以分别表示为一个 1-bit 和一个 2-bit 的二进制数 $(b_0, b_1)$；再按照 `CTAOrder` 的顺序排列，得到的 linear layout 输入坐标为 $b_0b_1$，即 $b_1$ 在低位，$b_0$ 在高位。坐标 $(1, 1)$ 按照上述规则转换为 linear layout 输入坐标为 $b_0b_1 = (101)_2$。同时，为了能够表示取余操作，我们可以利用 layout 的乘法（参见上文），将 $x \text{ \% } a$ 转换为 `identity1D(a, "i", "o") * zeros1D(size/a, "i", "o")`。具体 `makeCgaLayout(layout)` 实现的代码梗概如下：
 
 ```cpp
+// makeCgaLayout
+// (CTALayoutAttr layout)
 LinearLayout ret = LinearLayout::empty(); // Initialization
 for (int i = 0; i < rank; i++) {
   // Start with the most minor dimension, which is order[0].
@@ -282,11 +284,11 @@ return ret.transposeOuts(outDimNames);
 
 #### ctaLayout
 
-<!-- TODO: Explain how to combine a ctaLayout with a cgaLayout. -->
-
-将 ctaLayout 和 cgaLayout 结合的方法相当简单：直接利用 layout 的相乘即可。
+一般的 ctaLayout 会用 blocked layout 的方式来实现，具体请见 [Blocked Layouts](#blocked-layouts) 一节。有了 ctaLayout 后，将 ctaLayout 和 cgaLayout 结合的方法相当简单：直接利用 layout 的相乘即可。（注：实际 blocked layout 的实现是已经将 ctaLayout 和 cgaLayout 结合在一起了，因此以下函数无需单独调用，它是 blocked layout 转换为 linear layout 过程中的一个辅助函数。）
 
 ```cpp
+// combineCtaCgaWithShape
+// (LinearLayout ctaLayout, CTALayoutAttr cgaLayoutAttr, ArrayRef<int64_t> shape)
 LinearLayout cgaLayout = makeCgaLayout(cgaLayoutAttr);
 LinearLayout ret = (ctaLayout * cgaLayout).transposeOuts(outDimNames);
 ```
@@ -374,8 +376,8 @@ $$
 直接使用上面的公式来构建 layout 当然可行，但未免过于复杂。由于已知该 layout 是线性的，我们可以直接获取所需的 basis vectors 输入输出对来构造 linear layout。将 `SwizzledSharedLayout` 转换为 linear layout 的代码梗概如下：
 
 ```cpp
-// sharedToLinearLayoutNoLeadingOffset
-// (ArrayRef<int64_t> shape, SharedEncodingAttr shared)
+// swizzledSharedToLinearLayout
+// (ArrayRef<int64_t> shape, SwizzledSharedEncodingAttr shared)
 int colDim = shared.getOrder()[0];
 int rowDim = shared.getOrder()[1];
 int numCols = shape[colDim];
@@ -410,7 +412,7 @@ for (int i = 2; i < rank; i++) {
 
 <!-- 疑问：这里的各种名称眼花缭乱，SharedEncodingAttr，SharedEncodingTrait，Shared Layout，SwizzledSharedEncodingAttr，等等等等。在 TritonGPUAttrDefs.td 的 SwizzledSharedEncodingAttr 里面还有一大堆的 AttrBuilder（根本不知道是干什么的）。 -->
 
-## Distributed Layouts
+### Distributed Layouts
 
 <!-- 没太看明白到底什么是 Distributed Layout。在 TritonGPUAttrDefs.td 里面定义的 DistributedEncodingTrait 貌似只是最简单的 row/column-major layout，但它下面还有个 class DistributedEncoding。在论文里，什么 blocked/sliced, mma 都算是 Distributed Layout。-->
 
@@ -443,7 +445,7 @@ L = [0  1  2  3 ]
 - 在第 0 个维度（行）上，$L.\text{shape}[0] = 4 > T.\text{shape}[0] = 2$，因此 $T$ 在该维度上的每个元素将对应多个 thread。具体地，第 0 行的元素 $T[0, 0]$ 将分布到 $L[0, 0]$ 和 $L[2, 0]$ 所决定的两个 threads 上；第 1 行的元素 $T[1, 0]$ 将分布到 $L[1, 0]$ 和 $L[3, 0]$ 所决定的两个 threads 上，依此类推。
 - 在第 1 个维度（列）上，$L.\text{shape}[1] = 4 < T.\text{shape}[1] = 8$，因此 $T$ 在该维度上的元素所对应的 thread 将呈现周期性分布。具体地，第 0 列的元素 $T[0, 0]$ 和第 4 列的元素 $T[0, 4]$ 对应的 threads 相同；第 1 列的元素 $T[0, 1]$ 和第 5 列的元素 $T[0, 5]$ 对应的 threads 相同，依此类推。
 
-上述规则所给出的 logical tensor $T$ 在 layout $L$ 下的分布即为：
+上述规则所给出的 logical tensor $T$ 在 layout $L$ 下分布到各个 threads 的结果为：
 
 ```text
 L(T) = [ {0, 8}, {1, 9}, {2,10}, {3,11}, {0, 8}, {1, 9}, {2,10}, {3,11},
@@ -470,7 +472,194 @@ F (i, s_L, s_T) = \left\{
 \right.
 $$
 
+<!-- TODO: How to convert the above layout into linear layouts? -->
+
+### Blocked Layouts
+
+Blocked layout 是将前述 [cgaLayout](#cgalayout-ctalayoutattr) 与 [ctaLayout](#ctalayout) 结合的 layout，它用于完整描述 GPU 上各块硬件资源（CGA block、CTA block、warp、thread、register）各自对 logical tensor 的哪一块数据负责。其输入为 `(register_index, thread_index, warp_index, cta_index)`，输出为 logical tensor 的坐标 $(x_0, x_1, \cdots, x_n)$。
+
+完整声明一个 blocked layout 需要指定以下参数：
+
+- `sizePerThread`：每个 thread 内部 register 的大小。比如，`sizePerThread = [2, 2]` 表示每个 thread 内部的 register 分布为 2x2 的矩阵。
+- `threadsPerWarp`：每个 warp 内部的 thread 数目。比如，`threadsPerWarp = [8, 4]` 表示每个 warp 内部的 thread 分布为 8x4 的矩阵。
+- `warpsPerCTA`：每个 CTA block 内部的 warp 数目。比如，`warpsPerCTA = [2, 4]` 表示每个 CTA block 内部的 warp 分布为 2x4 的矩阵。
+- `order`：各个维度的排列顺序。该参数与 cgaLayout 中的 `CTAOrder` 含义相同。
+- `CTALayout`（optional）：每个 CGA block 内部的 CTA block 分布方式。再次强调，由于命名混淆的问题，这里的 `CTALayout` 实际上是 cgaLayout，具体请见前面 [CTA Layouts](#cta-layouts) 一节。如果未指定该参数，则默认每个 CGA block 内部仅有一个 CTA block，也即 `CTAsPerCGA = [1, 1, ..., 1]`，`CTASplitNum = [1, 1, ..., 1]`，`CTAOrder = [n, n-1, ..., 0]`。
+
+这些参数的含义大多都可以直观地看出，比如下面的例子：
+
+```text
+// sizePerThread = {2, 2}, threadsPerWarp = {8, 4}, warpsPerCTA = {1, 2},
+// CTAsPerCGA = {2, 2}, CTASplitNum = {2, 2}, order = {1, 0}
+```
+
+它对应将 32x32 的 logical tensor 分布到 2x2 个 CTA blocks 上，每个 CTA block 包含 2 个 warps（也即 64 个 threads）：
+
+```text
+CTA [0,0]                                              CTA [0,1]
+[ 0  0  1  1  2  2  3  3  ; 32 32 33 33 34 34 35 35 ]  [ 0  0  1  1  2  2  3  3  ; 32 32 33 33 34 34 35 35 ]
+[ 0  0  1  1  2  2  3  3  ; 32 32 33 33 34 34 35 35 ]  [ 0  0  1  1  2  2  3  3  ; 32 32 33 33 34 34 35 35 ]
+[ 4  4  5  5  6  6  7  7  ; 36 36 37 37 38 38 39 39 ]  [ 4  4  5  5  6  6  7  7  ; 36 36 37 37 38 38 39 39 ]
+[ 4  4  5  5  6  6  7  7  ; 36 36 37 37 38 38 39 39 ]  [ 4  4  5  5  6  6  7  7  ; 36 36 37 37 38 38 39 39 ]
+...                                                    ...
+[ 28 28 29 29 30 30 31 31 ; 60 60 61 61 62 62 63 63 ]  [ 28 28 29 29 30 30 31 31 ; 60 60 61 61 62 62 63 63 ]
+[ 28 28 29 29 30 30 31 31 ; 60 60 61 61 62 62 63 63 ]  [ 28 28 29 29 30 30 31 31 ; 60 60 61 61 62 62 63 63 ]
+
+CTA [1,0]                                              CTA [1,1]
+[ 0  0  1  1  2  2  3  3  ; 32 32 33 33 34 34 35 35 ]  [ 0  0  1  1  2  2  3  3  ; 32 32 33 33 34 34 35 35 ]
+[ 0  0  1  1  2  2  3  3  ; 32 32 33 33 34 34 35 35 ]  [ 0  0  1  1  2  2  3  3  ; 32 32 33 33 34 34 35 35 ]
+[ 4  4  5  5  6  6  7  7  ; 36 36 37 37 38 38 39 39 ]  [ 4  4  5  5  6  6  7  7  ; 36 36 37 37 38 38 39 39 ]
+[ 4  4  5  5  6  6  7  7  ; 36 36 37 37 38 38 39 39 ]  [ 4  4  5  5  6  6  7  7  ; 36 36 37 37 38 38 39 39 ]
+...                                                    ...
+[ 28 28 29 29 30 30 31 31 ; 60 60 61 61 62 62 63 63 ]  [ 28 28 29 29 30 30 31 31 ; 60 60 61 61 62 62 63 63 ]
+[ 28 28 29 29 30 30 31 31 ; 60 60 61 61 62 62 63 63 ]  [ 28 28 29 29 30 30 31 31 ; 60 60 61 61 62 62 63 63 ]
+```
+
+为了将其转换为 linear layout（默认各个维度分布都是 2 的幂次），我们首先研究每一个子部分（`sizePerThread`、`threadsPerWarp`、`warpsPerCTA`）如何表示。以 `sizePerThread = [4, 4]`、`order = [1, 0]` 为例，其输入为 $[0, 16)$ 的整数（代表 register 的 index），输出为 4x4 的坐标（代表该 register 在 thread 中的相对位置），输入输出关系为按行优先顺序排列的矩阵：
+
+```text
+[ 0,  1,  2,  3 ]
+[ 4,  5,  6,  7 ]
+[ 8,  9, 10, 11 ]
+[12, 13, 14, 15 ]
+```
+
+将输入和输出都转换为二进制表示后，容易看出，输入的低 2 位表示输出的列坐标，输入的高 2 位表示输出的行坐标。根据 layout 乘法的性质，上述操作可以用两个 `identity1D` 相乘方便地表达：`identity1D(4, "i", "o1") * identity1D(4, "i", "o2")`。与 `makeCgaLayout` 的操作相比，这里的转换更简单，因为没有额外的取余操作需要进行，只需将各个维度的 `identity1D` 按照 `order` 的顺序排列相乘即可。在 Triton 中，这个操作可以用辅助函数 `identityStandardND(inDimName, shape, order)` 来实现：
+
+```cpp
+LinearLayout identityStandardND(StringAttr inDimName, ArrayRef<unsigned> shape,
+                                ArrayRef<unsigned> order) {
+  assert(shape.size() == order.size());
+  MLIRContext *ctx = inDimName.getContext();
+  auto rank = shape.size();
+
+  // The order in triton is written wrt. [dim0, dim1, ...].
+  SmallVector<StringAttr> outDimNames = standardOutDimNames(ctx, rank);
+
+  LinearLayout ret = LinearLayout::empty();
+  for (int i = 0; i < shape.size(); i++) {
+    // Start with the most-minor dimension, which is order[0].
+    int dim = order[i];
+    ret *= LinearLayout::identity1D(shape[dim], inDimName, outDimNames[dim]);
+  }
+  return ret;
+}
+```
+
+使用 `identityStandardND`，上述 `sizePerThread` 的转换可以方便地写为 `identityStandardND(S("register"), sizePerThread, order)`。同理，`threadsPerWarp` 和 `warpsPerCTA` 的转换也可以用 `identityStandardND` 来实现。将上述三个部分的转换结果相乘，再乘上已有的 `CTALayout`，即可得到 blocked layout 对应的 linear layout。具体代码如下：
+
+```cpp
+BlockedEncodingAttr::toLinearLayout(ArrayRef<int64_t> shape) const {
+  assert(shape.size() == getOrder().size());
+  MLIRContext *ctx = getContext();
+
+  const auto &order = getOrder();
+  LinearLayout ctaLayout =
+      identityStandardND(S("register"), getSizePerThread(), order) *
+      identityStandardND(S("lane"), getThreadsPerWarp(), order) *
+      identityStandardND(S("warp"), getWarpsPerCTA(), order);
+
+  return combineCtaCgaWithShape(ctaLayout, getCTALayout(), shape);
+}
+```
+
+### MMA Layouts
+
+#### AMDMfmaEncoding
+
+MFMA (Matrix Fused Multiply-Add) 是 AMD CDNA 系 GPU 上的一个特殊的矩阵乘法指令。AMD 规定了执行 Mfma 指令时的矩阵布局方式，称为 `AMDMfmaEncoding`，它可以被视作 blocked layout 的某种变体。虽然 [TritonGPUAttrDefs.td](https://github.com/triton-lang/triton/blob/main/include/triton/Dialect/TritonGPU/IR/TritonGPUAttrDefs.td) 中描述了更一般的场景，但在 [LinearLayoutConversions.cpp](https://github.com/triton-lang/triton/blob/main/lib/Dialect/TritonGPU/IR/LinearLayoutConversions.cpp) 中定义的 `AMDMfmaEncodingAttr::toLinearLayout` 函数仅接受两种情况：
+
+**1.** 每个 warp 处理 32x32 的 tensor block，共 64 个 thread，每个 thread 有 16 个 register。单个 warp 内 layout 如下：
+
+```text
+            warp 0
+--------------/\----------------
+[ 0   1   2   3  ...... 30  31 ]
+[ 0   1   2   3  ...... 30  31 ] 
+[ 0   1   2   3  ...... 30  31 ] 
+[ 0   1   2   3  ...... 30  31 ] 
+[ 32  33  34  35 ...... 62  63 ]
+[ 32  33  34  35 ...... 62  63 ]
+[ 32  33  34  35 ...... 62  63 ] 
+[ 32  33  34  35 ...... 62  63 ]
+[ 0   1   2   3  ...... 30  31 ]
+[ 0   1   2   3  ...... 30  31 ] 
+[ 0   1   2   3  ...... 30  31 ] 
+[ 0   1   2   3  ...... 30  31 ] 
+[ 32  33  34  35 ...... 62  63 ]
+[ 32  33  34  35 ...... 62  63 ]
+[ 32  33  34  35 ...... 62  63 ] 
+[ 32  33  34  35 ...... 62  63 ]
+...
+[ 0   1   2   3  ...... 30  31 ]
+[ 0   1   2   3  ...... 30  31 ] 
+[ 0   1   2   3  ...... 30  31 ] 
+[ 0   1   2   3  ...... 30  31 ] 
+[ 32  33  34  35 ...... 62  63 ]
+[ 32  33  34  35 ...... 62  63 ]
+[ 32  33  34  35 ...... 62  63 ] 
+[ 32  33  34  35 ...... 62  63 ]
+```
+
+虽然这种 layout 不完全对应 blocked layout（因为 register 的分布中间出现了一个 gap），但它仍然可以表示为一般的 linear layout，因各个分布的长度都是 2 的幂次。我们可以直接用 basis vectors 来完备地构造：
+
+```cpp
+StringAttr kRegister = S("register");
+StringAttr kLane = S("lane");
+auto tileLayout = LinearLayout(
+        {{kRegister, {{0, 1}, {0, 2}, {0, 8}, /*gap*/ {0, 16}}},
+         {kLane, {{1, 0}, {2, 0}, {4, 0}, {8, 0}, {16, 0}, /*gap*/ {0, 4}}}},
+        {outDimNames[order[0]], outDimNames[order[1]]})
+```
+
+**2.** 每个 warp 处理 16x16 的 tensor block，共 64 个 thread，每个 thread 有 4 个 register。单个 warp 内 layout 如下：
+
+```text
+            warp 0
+--------------/\----------------
+[ 0   1   2   3  ...... 14  15 ]
+[ 0   1   2   3  ...... 14  15 ]
+[ 0   1   2   3  ...... 14  15 ]
+[ 0   1   2   3  ...... 14  15 ]
+[ 16  17  18  19 ...... 30  31 ]
+[ 16  17  18  19 ...... 30  31 ]
+[ 16  17  18  19 ...... 30  31 ]
+[ 16  17  18  19 ...... 30  31 ]
+[ 32  33  34  35 ...... 46  47 ]
+[ 32  33  34  35 ...... 46  47 ]
+[ 32  33  34  35 ...... 46  47 ]
+[ 32  33  34  35 ...... 46  47 ]
+[ 48  49  50  51 ...... 62  63 ]
+[ 48  49  50  51 ...... 62  63 ]
+[ 48  49  50  51 ...... 62  63 ]
+[ 48  49  50  51 ...... 62  63 ]
+```
+
+这种 layout 也可以用 basis vectors 来完备地构造：
+
+```cpp
+auto tileLayout = LinearLayout(
+        {{kRegister, {{0, 1}, {0, 2}}},
+         {kLane, {{1, 0}, {2, 0}, {4, 0}, {8, 0}, /*gap*/ {0, 4}, {0, 8}}}},
+        {outDimNames[order[0]], outDimNames[order[1]]})
+```
+
+最后，将该 `tileLayout` 与事先给定的 `warpsPerCTA`、`CTALayout` 相乘，即可得到完整的 layout。
+
+#### AMDWmmaEncoding
+
+WMMA (Wave Matrix Multiply-Accumulate) 是 AMD RDNA 系 GPU 上的另一个特殊的矩阵乘法指令。类似于 MFMA，AMD 规定了执行 WMMA 指令时采用的特殊矩阵布局方式，分为 version 1 和 version 2。其具体布局可在该[文档](https://github.com/triton-lang/triton/blob/main/include/triton/Dialect/TritonGPU/IR/TritonGPUAttrDefs.td#L1063-L1132)中找到详细叙述，这里不再赘述。
+
+#### NvidiaMmaEncoding
+
+MMA (Matrix Multiply-Accumulate) 是 NVIDIA GPU 上的矩阵乘法指令。与前面提及的类似，执行该指令时同样需采用特定布局，可以参考[文档](https://github.com/triton-lang/triton/blob/main/include/triton/Dialect/TritonGPU/IR/TritonGPUAttrDefs.td#L1170-L1236)查看细节。<!--TODO: 了解更多细节-->
+
+### Slice Layouts
+
+Slice layouts 可以看作是 distributed layout 的一种变体。
+
+
 [^1]: https://www.lei.chat/posts/triton-linear-layout-concept/
 [^2]: https://github.com/triton-lang/triton/blob/main/include/triton/Dialect/TritonGPU/IR/TritonGPUAttrDefs.td
-[^3]: https://github.com/triton-lang/triton/blob/d9facf3/lib/Dialect/TritonGPU/IR/LinearLayoutConversions.cpp
-[^4]: https://github.com/triton-lang/triton/blob/d9facf3/include/triton/Tools/LinearLayout.h
+[^3]: https://github.com/triton-lang/triton/blob/main/lib/Dialect/TritonGPU/IR/LinearLayoutConversions.cpp
+[^4]: https://github.com/triton-lang/triton/blob/main/include/triton/Tools/LinearLayout.h
