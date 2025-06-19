@@ -293,7 +293,7 @@ LinearLayout ret = (ctaLayout * cgaLayout).transposeOuts(outDimNames);
 
 ### Shared Layouts
 
-将一个给定的 logical tensor 依次按行存入 shared memory 时，为了避免所谓的 **bank conflicts**，通常会在直接存入数据之前先进行 swizzling（混洗）操作。我们下面详细讨论这一点。本节中讨论所使用的的例子均来自于 [Triton Linear Layout: Concept](https://www.lei.chat/posts/triton-linear-layout-concept/) 一文[^1]。
+将一个给定的 logical tensor 依次按行存入 shared memory 时，为了避免所谓的 **bank conflicts**，通常会在直接存入数据之前先进行 swizzling（混洗）操作。我们下面详细讨论这一点。本节中讨论所使用的部分例子来自于 [Triton Linear Layout: Concept](https://www.lei.chat/posts/triton-linear-layout-concept/) 一文[^1]。
 
 一般而言，shared memory 会根据存储地址划分为若干个 bank，通常为 32 个。存储地址和其对应的 bank 之间转换关系为
 
@@ -311,20 +311,20 @@ $$
 
 ![](https://www.lei.chat/posts/triton-linear-layout-concept/shared-memory-swizzle.svg)
 
-用来描述 shared memory 中具体是如何 swizzle 的 layout 就是 `SharedLayout`，它将 logical tensor 的 index（按照 `order` 给出的顺序，见下）映射到 swizzle 后的行、列坐标上。这里，我们先假设讨论的 logical tensor 都是 2 维的。对第 $i$ 行的 swizzle 操作可以一般性地表示为：
+用来描述 shared memory 中具体是如何 swizzle 的 layout 就是 `SwizzledSharedLayout`，它将 logical tensor 的 index（按照 `order` 给出的顺序，见下）映射到 swizzle 后的行、列坐标上。这里，我们先假设讨论的 logical tensor 都是 2 维的。对第 $i$ 行的 swizzle 操作可以一般性地表示为：
 
 $$
 j \mapsto f(i) \oplus j
 $$
 
-其中，$f(i)$ 由 layout 决定，我们下面称其为 phase；在上面的例子里，$f(i)=i$。声明一个 `SharedLayout` 需要指定以下参数：
+其中，$f(i)$ 由 layout 决定，我们下面称其为 phase；在上面的例子里，$f(i)=i$。声明一个 `SwizzledSharedLayout` 需要指定以下参数：
 
 - `vec`：进行 swizzle 时配对的数目。比如，`vec = 2` 表示将相邻的两个元素配对视作一个元素，再进行 swizzle 操作。上面的例子里，`vec = 1`。
 - `perPhase`：swizzle 操作的周期。比如，`perPhase = 4` 表示每 4 行将 swizzle 的 phase 加一。上面的例子里，`perPhase = 1`。
 - `maxPhase`：swizzle 操作的最大 phase（不包含）。比如，`maxPhase = 4` 表示 swizzle 的最大 phase 为 4，到达之后置零重新开始。
 - `order`：logical tensor index 排列的顺序，同时也决定 swizzle 操作对应的维度。比如，`order = [1, 0]` 表示 index 按行优先顺序排列。对于高于 2 维的 logical tensor，swizzle 对 `order` 给出的头两个维度进行操作。如无特别说明，下面讨论的 logical tensor 均为 2 维且采用 `order = [1, 0]` 的顺序；其余的 `order` 和更高的维度只需要交换行列顺序即可。
 
-下面展示了一些具体的 `SharedLayout` 的例子，假设 `shape=[4, 8]` 。
+下面展示了一些具体的 `SwizzledSharedLayout` 的例子，假设 `shape=[4, 8]` 。
 
 - `vec=1, perPhase=2, maxPhase=2, order=[1,0]`
 
@@ -348,13 +348,13 @@ $$
 [30, 31, 28, 29, 26, 27, 24, 25]
 ```
 
-从以上例子我们可以归纳出 `SharedLayout` 的一般性数学形式。使用给出的参数，第 $i$ 行的 phase 可以表示为：
+从以上例子我们可以归纳出 `SwizzledSharedLayout` 的一般性数学形式。使用给出的参数，第 $i$ 行的 phase 可以表示为：
 
 $$
 f(i) = \left\lfloor \frac{i}{\text{perPhase}} \right\rfloor \text{ \% } \text{maxPhase}
 $$
 
-为了将该 `SharedLayout` 转换为 linear layout，还需要指明进行 swizzle 操作的 shape。假设 swizzle 操作的 shape 为 $[M, N]$，则 swizzle 后 index 为 $k$ 的 logical tensor 将位于第 $i$ 行第 $j$ 列，满足：
+为了将该 `SwizzledSharedLayout` 转换为 linear layout，还需要指明进行 swizzle 操作的 shape。假设 swizzle 操作的 shape 为 $[M, N]$，则 swizzle 后 index 为 $k$ 的 logical tensor 将位于第 $i$ 行第 $j$ 列，满足：
 
 $$
 k = i \cdot N + j \text{ \% vec} + [f(i) \oplus \lfloor j / \text{vec}\rfloor] \cdot \text{vec}
@@ -369,11 +369,13 @@ j &= (k \text{ \% } N) \text{ \% vec} + \left(\left\lfloor \frac{k \text{ \% } N
 \end{align*}
 $$
 
-可以证明，当 shape $[M, N]$ 中的 $M$、$N$ 和 `SharedLayout` 的各参数都是 2 的幂次时，上述 layout $\mathcal{L}(k) = (i, j)$ 满足线性性质。这是因为向下取整除法、取模和乘法运算在除数和乘数是 2 的幂次时都等价于提取二进制数的某些位，这样的操作自然是线性的。
+可以证明，当 shape $[M, N]$ 中的 $M$、$N$ 和 `SwizzledSharedLayout` 的各参数都是 2 的幂次时，上述 layout $\mathcal{L}(k) = (i, j)$ 满足线性性质。这是因为向下取整除法、取模和乘法运算在除数和乘数是 2 的幂次时都等价于提取二进制数的某些位，这样的操作自然是线性的。
 
-直接使用上面的公式来构建 layout 当然可行，但未免过于复杂。由于已知该 layout 是线性的，我们可以直接获取所需的 basis vectors 输入输出对来构造 linear layout。将 `SharedLayout` 转换为 linear layout 的代码梗概如下：
+直接使用上面的公式来构建 layout 当然可行，但未免过于复杂。由于已知该 layout 是线性的，我们可以直接获取所需的 basis vectors 输入输出对来构造 linear layout。将 `SwizzledSharedLayout` 转换为 linear layout 的代码梗概如下：
 
 ```cpp
+// sharedToLinearLayoutNoLeadingOffset
+// (ArrayRef<int64_t> shape, SharedEncodingAttr shared)
 int colDim = shared.getOrder()[0];
 int rowDim = shared.getOrder()[1];
 int numCols = shape[colDim];
@@ -402,5 +404,34 @@ for (int i = 2; i < rank; i++) {
 }
 ```
 
+除此以外，`SharedLayout` 还有许多变种，比如 `NVMMASharedEncoding` 和 `AMDRotatingSharedEncoding`。<!-- TODO: Explain how to convert these to linear layouts. -->
+
+<!-- NVMMASharedEncodingAttr 有这份文档 https://docs.nvidia.com/cuda/parallel-thread-execution/#asynchronous-warpgroup-level-matrix-shared-memory-layout。AMDRotatingSharedEncodingAttr 在 TritonGPUAttrDefs.td 里面有详细的 description，看起来是 SwizzledSharedLayout 的一个变种，不过挺相似的。 -->
+
+<!-- 疑问：这里的各种名称眼花缭乱，SharedEncodingAttr，SharedEncodingTrait，Shared Layout，SwizzledSharedEncodingAttr，等等等等。在 TritonGPUAttrDefs.td 的 SwizzledSharedEncodingAttr 里面还有一大堆的 AttrBuilder（根本不知道是干什么的）。 -->
+
+## Distributed Layouts
+
+<!-- 没太看明白到底什么是 Distributed Layout。在 TritonGPUAttrDefs.td 里面定义的 DistributedEncodingTrait 貌似只是最简单的 row/column-major layout，但它下面还有个 class DistributedEncoding。在论文里，什么 blocked/sliced, mma 都算是 Distributed Layout。-->
+
+以下所描述的 Distributed Layout 是指 [TritonGPUAttrDefs.td](https://github.com/triton-lang/triton/blob/main/include/triton/Dialect/TritonGPU/IR/TritonGPUAttrDefs.td) 文档中定义的 `DistributedEncodingTrait` 和 `DistributedEncoding`。
+
+`DistributedEncodingTrait` 描述了最基本的行/列优先 layout。与前面介绍的 layout 类似，行/列等的优先顺序由 `order` 参数给出；比如，`order = [1, 0]` 表示行优先顺序（即 layout 对应的 index 沿着一行从左至右增加，一行结束后再开始下一行），`order = [0, 1]` 表示列优先顺序（即 layout 对应的 index 沿着一列从上至下增加，一列结束后再开始下一列）。除此以外，给出 layout 的 `shape` 即可。
+
+```text
+shape = [4, 4], order = [0, 1]
+-> layout = [0  4  8  12]
+            [1  5  9  13]
+            [2  6  10 14]
+            [3  7  11 15]
+```
+
+`DistributedEncoding` 描述的则是 logical tensor（以下称作 $T$）分布到多个 threads 上的方式。声明一个 `DistributedEncoding` 只需要一个给定的 `DistributedEncodingTrait`，也即上方例子里的 `layout` 矩阵（以下称作 $L$）。文档里指出，$L$ 不需要和 $T$ 的 shape 一致，甚至不需要有相同的维数<!--which is what i don't understand-->，但为了方便，以下的讨论始终假设 $L$ 和 $T$ 有相同的维数。
+
+
+
 
 [^1]: https://www.lei.chat/posts/triton-linear-layout-concept/
+[^2]: https://github.com/triton-lang/triton/blob/main/include/triton/Dialect/TritonGPU/IR/TritonGPUAttrDefs.td
+[^3]: https://github.com/triton-lang/triton/blob/d9facf3/lib/Dialect/TritonGPU/IR/LinearLayoutConversions.cpp
+[^4]: https://github.com/triton-lang/triton/blob/d9facf3/include/triton/Tools/LinearLayout.h
