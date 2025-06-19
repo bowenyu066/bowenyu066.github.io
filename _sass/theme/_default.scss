@@ -43,19 +43,3 @@ $sidebar-screen-min-width   : 1024px;
     --global-text-color-light           : #{$light-gray};
     --global-thead-color                : #{$lighter-gray};
 }
-
-.highlighter-rouge,
-figure.highlight,
-.highlighter-rouge .highlight,
-.highlighter-rouge pre {
-  overflow: auto;
-  scrollbar-width: none;        /* Firefox */
-  -ms-overflow-style: none;     /* IE and Edge */
-}
-
-/* Hide WebKit scrollbar */
-.highlighter-rouge pre::-webkit-scrollbar,
-.highlighter-rouge .highlight::-webkit-scrollbar,
-figure.highlight::-webkit-scrollbar {
-  display: none;
-}
