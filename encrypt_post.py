@@ -7,7 +7,7 @@ import glob
 import sys
 import getpass
 
-LOCAL_DIR = 'local'
+LOCAL_DIR = 'files'
 POSTS_DIR = '_posts'
 SITE_DIR = '_site'
 ENCRYPTED_DIR = 'encrypted'
@@ -62,7 +62,7 @@ def find_generated_html(base_name):
     p2 = os.path.join(SITE_DIR, 'posts', '*', '*', f'{base_name}.html')
     matches = glob.glob(p1) + glob.glob(p2)
     if not matches:
-        print("Error: Generated HTML file not found.", file=sys.stderr)
+        print(f"Error: Generated HTML file {base_name} not found.", file=sys.stderr)
         sys.exit(1)
     return matches[0]
 
