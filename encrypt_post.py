@@ -18,16 +18,17 @@ def inline_latex_to_display(content):
     lines = content.splitlines()
     for i, line in enumerate(lines):
         # Replace single $ with double $$ for inline LaTeX
+        line = line.replace('$$', '$')
         lines[i] = line.replace('$', '$$')
     return '\n'.join(lines)
 
 def replace_percent_signs(content):
-    """Replace percent signs (\%) with original percent signs
+    r"""Replace percent signs (\\%) with original percent signs
     in LaTeX content."""
     lines = content.splitlines()
     for i, line in enumerate(lines):
         # Replace \% with %
-        lines[i] = line.replace('\\%', '%')
+        lines[i] = line.replace(r'\%', '%')
     return '\n'.join(lines)
 
 def process_markdown(md_path):
