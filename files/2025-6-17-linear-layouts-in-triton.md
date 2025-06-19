@@ -426,10 +426,49 @@ shape = [4, 4], order = [0, 1]
             [3  7  11 15]
 ```
 
-`DistributedEncoding` 描述的则是 logical tensor（以下称作 $T$）分布到多个 threads 上的方式。声明一个 `DistributedEncoding` 只需要一个给定的 `DistributedEncodingTrait`，也即上方例子里的 `layout` 矩阵（以下称作 $L$）。文档里指出，$L$ 不需要和 $T$ 的 shape 一致，甚至不需要有相同的维数<!--which is what i don't understand-->，但为了方便，以下的讨论始终假设 $L$ 和 $T$ 有相同的维数。
+`DistributedEncoding` 描述的则是 logical tensor（以下称作 $T$）分布到多个 thread 上的方式。声明一个 `DistributedEncoding` 只需要一个给定的 `DistributedEncodingTrait`，也即上方例子里的 `layout` 矩阵（以下称作 $L$）。文档里指出，$L$ 不需要和 $T$ 的 shape 一致，甚至不需要有相同的 rank<!--which is what i don't understand-->，但为了方便，以下的讨论始终假设 $L$ 和 $T$ 的 rank 相同。记维度 $i$ 上 $L$ 和 $T$ 的长度分别为 $L.\text{shape}[i]$ 和 $T.\text{shape}[i]$。
 
+- 当 $L.\text{shape}[i] > T.\text{shape}[i]$，即 logical tensor 在第 $i$ 个维度的长度长于 layout 矩阵时，该 tensor $T$ 在该维度上的每个元素将对应多个 thread：该维度第 $k$ 个元素分布到 $L[k]$，$L[k + T.\text{shape}[i]]$，$L[k + 2 \cdot T.\text{shape}[i]]$，$\cdots$ 所决定的这些 threads 上，其中 $k \in [0, T.\text{shape}[i])$。这被称作 **broadcasting**。
+- 当 $L.\text{shape}[i] < T.\text{shape}[i]$，即 logical tensor 在第 $i$ 个维度的长度短于 layout 矩阵时，该 tensor $T$ 在该维度上的元素所对应的 thread 将呈现周期性分布：该维度第 $k$ 个元素分布到 $L[k \text{ \% } L.\text{shape}[i]]$ 所决定的 thread 上，其中 $k \in [0, T.\text{shape}[i])$。这被称作 **wrapping around**。
 
+上面规则稍显抽象，下面通过一个例子来说明。假设 logical tensor $T$ 的 shape 为 $[2, 8]$，layout 矩阵 $L$ 的 shape 为 $[4, 4]$：
 
+```text
+L = [0  1  2  3 ]
+    [4  5  6  7 ]
+    [8  9  10 11]
+    [12 13 14 15]
+```
+
+- 在第 0 个维度（行）上，$L.\text{shape}[0] = 4 > T.\text{shape}[0] = 2$，因此 $T$ 在该维度上的每个元素将对应多个 thread。具体地，第 0 行的元素 $T[0, 0]$ 将分布到 $L[0, 0]$ 和 $L[2, 0]$ 所决定的两个 threads 上；第 1 行的元素 $T[1, 0]$ 将分布到 $L[1, 0]$ 和 $L[3, 0]$ 所决定的两个 threads 上，依此类推。
+- 在第 1 个维度（列）上，$L.\text{shape}[1] = 4 < T.\text{shape}[1] = 8$，因此 $T$ 在该维度上的元素所对应的 thread 将呈现周期性分布。具体地，第 0 列的元素 $T[0, 0]$ 和第 4 列的元素 $T[0, 4]$ 对应的 threads 相同；第 1 列的元素 $T[0, 1]$ 和第 5 列的元素 $T[0, 5]$ 对应的 threads 相同，依此类推。
+
+上述规则所给出的 logical tensor $T$ 在 layout $L$ 下的分布即为：
+
+```text
+L(T) = [ {0, 8}, {1, 9}, {2,10}, {3,11}, {0, 8}, {1, 9}, {2,10}, {3,11},
+         {4,12}, {5,13}, {6,14}, {7,15}, {4,12}, {5,13}, {6,14}, {7,15}]
+```
+
+总结上述规则，可以给出 `DistributedEncoding` 的数学表达式：由 layout 矩阵 $L$ 给出的 logical tensor $T$ 对应的 thread layout 为
+
+$$
+\begin{align*}
+  &\mathcal{L}(L; T)[\cdots, i_k, \cdots] \\
+  =& \left\{L[\cdots, i_k^\prime, \cdots] \ \vert \ i_k^\prime \in F (i_k,L. \text{shape}[k], T.\text{shape}[k])\right\}
+\end{align*}
+$$
+
+其中，$(\cdots, i_k, \cdots)$ 代表 logical tensor $T$ 的坐标，$i_k^\prime$ 代表 $i_k$ 所能对应的 layout 矩阵 $L$ 的坐标，这些坐标由函数 $F(i, s_L, s_T)$ 给出，其定义如下：
+
+$$
+F (i, s_L, s_T) = \left\{ 
+  \begin{array}{ll}
+    \{i \text{ \% } s_L\}, & \text{if } s_L \le s_T \\
+    \{i + j \cdot s_T \ \vert \ j \in \mathbb{N}, i + j \cdot s_T < s_L \}, & \text{if } s_L > s_T
+  \end{array}
+\right.
+$$
 
 [^1]: https://www.lei.chat/posts/triton-linear-layout-concept/
 [^2]: https://github.com/triton-lang/triton/blob/main/include/triton/Dialect/TritonGPU/IR/TritonGPUAttrDefs.td
