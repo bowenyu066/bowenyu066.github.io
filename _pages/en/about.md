@@ -1,10 +1,12 @@
 ---
-permalink: /
+permalink: /en/about/
 title: "Bowen Yu's Homepage ✨"
 author_profile: true
 redirect_from: 
   - /about/
   - /about.html
+lang: en
+translation_id: about
 ---
 
 ## About me
@@ -45,3 +47,5 @@ My resume is attached [here](https://bowenyu066.github.io/cv/).
         </p>
     </div>
 </div>
+
+

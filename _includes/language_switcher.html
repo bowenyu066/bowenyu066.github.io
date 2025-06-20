@@ -1,0 +1,17 @@
+{% assign current_lang = page.lang | default: site.default_lang %}
+{% if site.supported_langs.size > 1 %}
+<li class="nav__item dropdown">
+  <a class="nav__link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    {{ current_lang | upcase }}
+  </a>
+  <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+    {% for lang in site.supported_langs %}
+      {% if lang != current_lang %}
+        <a class="dropdown-item" href="{{ page.url | replace: current_lang, lang | relative_url }}">{{ lang | upcase }}</a>
+      {% endif %}
+    {% endfor %}
+  </div>
+</li>
+{% endif %}
+
+

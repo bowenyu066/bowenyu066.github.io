@@ -1,0 +1,19 @@
+---
+layout: default
+---
+
+{% include base_path %}
+
+<div id="main" role="main">
+  {% include sidebar.html %}
+
+  <div class="archive">
+    <h1 class="page__title">{{ site.data.locales[page.lang].posts_heading | default: "Latest Posts" }}</h1>
+    {% for post in site.posts %}
+      {% if post.lang == page.lang %}
+        {% include archive-single.html type="grid" %}
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
