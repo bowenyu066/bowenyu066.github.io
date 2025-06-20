@@ -14,3 +14,7 @@ package-lock.json
 
 # Ignore python cache files
 __pycache__/
+
+# Ignore the directory for bundle and vendor files
+vendor/
+.bundle/
