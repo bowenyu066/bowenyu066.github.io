@@ -1,12 +1,7 @@
 ---
 title: Linear Layouts in Triton
-date: 2025-6-17 17:10:00 +0800
-permalink: /posts/2025/06/linear-layouts-in-triton/
+date: 2025-6-20 10:01:03 +0800
 excerpt: "Notes on linear layouts in Triton and its conversion with various traditional layout types."
-tags: 
-    - Computer Science
-categories: 
-    - Computer Science
 ---
 
 本帖暂时用中文写，稍微方便点。后面有可能会转换为英文版。
@@ -663,14 +658,15 @@ L_parent =  [0  1  2  3 ]
             [4  5  6  7 ]
             [8  9  10 11]
             [12 13 14 15]
---sqweeze in dim=0-->
+--squeeze in dim=0-->
 L = [{0, 4, 8, 12}, {1, 5, 9, 13}, {2, 6, 10, 14}, {3, 7, 11, 15}]
 ```
 
 则任意的 logical tensor $T$ 分布到 threads 上的方式由收缩后的 layout $L$ 给出；如果在某方向上 logical tensor 的长度相比于 layout $L$ 有富余或者长度不够，则将使用完全类似于 distributed layout 的规则，进行 broadcasting 或 wrapping around。比如，对于上面的例子，假设 logical tensor $T$ 的 shape 为 $[1, 8]$，则其分布到 threads 上的方式为：
 
 ```text
-L(T) = [{0, 4, 8, 12}, {1, 5, 9, 13}, {2, 6, 10, 14}, {3, 7, 11, 15}, {0, 4, 8, 12}, {1, 5, 9, 13}, {2, 6, 10, 14}, {3, 7, 11, 15}]
+L(T) = [{0, 4, 8, 12}, {1, 5, 9, 13}, {2, 6, 10, 14}, {3, 7, 11, 15},
+        {0, 4, 8, 12}, {1, 5, 9, 13}, {2, 6, 10, 14}, {3, 7, 11, 15}]
 ```
 
 [^1]: https://www.lei.chat/posts/triton-linear-layout-concept/
