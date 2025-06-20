@@ -14,7 +14,7 @@ title_separator          : "-"
 name                     : &name "Bowen Yu" 
 description              : &description "An MIT undergrad majoring in Physics (8) and AI (6-4)"
 url                      : https://bowenyu066.github.io # the base hostname & protocol for your site e.g. "https://[your GitHub username].github.io"
-baseurl                  : "" # the subpath of your site, e.g. "/blog"
+baseurl                  : "/about" # the subpath of your site, e.g. "/blog"
 repository               : "bowenyu066/bowenyu066.github.io"
 
 # Site Author - The following control what appear as part of the author content on the side bar.
@@ -24,7 +24,7 @@ author:
   # Biographic information
   avatar           : "me_3.jpeg"
   name             : "Bowen Yu"
-  pronouns         : "Pronouns: he/him/his"
+  pronouns         : "Pronouns: he/him"
   bio              : "An MIT undergrad majoring in Physics (8) and AI (6-4)"
   location         : "Boston, MA, USA"
   employer         : "MIT"
@@ -57,7 +57,7 @@ author:
   goodreads        : # Username
   google_plus      : # Username
   keybase          : # Username
-  instagram        : yubowen10
+  instagram        : # yubowen10
   lastfm           : # Username
   linkedin         : bowen-yu-6350802bb
   mastodon         : # URL

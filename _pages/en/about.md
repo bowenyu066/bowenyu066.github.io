@@ -2,7 +2,8 @@
 permalink: /en/about/
 title: "Bowen Yu's Homepage ✨"
 author_profile: true
-redirect_from: 
+redirect_from:
+  - /
   - /about/
   - /about.html
 lang: en
