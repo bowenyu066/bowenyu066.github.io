@@ -51,7 +51,7 @@ class KernelInterface(Generic[T]):
 class JITFunction(KernelInterface[T]): ...
 ```
 
-Therefore, `add_kernel[grid](x, y, output, n_elements, BLOCK_SIZE=1024)` is equivalent to `triton.jit(add_kernel).__getitem__(grid)(x, y, output, n_elements, BLOCK_SIZE=1024)`, which is `triton.jit(add_kernel).run(grid=grid, warmup=False, *(x, y, output, n_elements, BLOCK_SIZE=1024))`.
+Therefore, `add_kernel[grid](x, y, output, n_elements, BLOCK_SIZE=1024)` is equivalent to `triton.jit(add_kernel).__getitem__(grid)(x, y, output, n_elements, BLOCK_SIZE=1024)`, which is `triton.jit(add_kernel).run(grid=grid, warmup=False, *(x, y, output, n_elements, BLOCK_SIZE=1024))`. The core computation is done in `kernel.run`, which is too complicated that I actually haven't fully figured out.
 
 `typing` is so freaking strange. It makes a python script look like a C++ template code.
 
