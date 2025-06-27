@@ -22,7 +22,7 @@ MLIR_ENABLE_DUMP = 1
 TODO list for this week:
 - 看 triton python tutorials 怎么用的
 - 看一下 gluon 到底是干什么的，里面有没有 linear 或者 blocked layouts；如果有 blocked layouts，看看能否转换为 linear
-- emitIndices 函数是与 layout 转换相关的，研究一下里面的细节
+- emitIndices 函数是与 layout 转换相关的，研究一下里面的细节（https://github.com/triton-lang/triton/blob/main/lib/Conversion/TritonGPUToLLVM/Utility.cpp#L310）
 - 学会使用 llvm::outs() 打印调试信息
 - 学会使用 MLIR_ENABLE_DUMP = 1 来看下 python code 是如何一步步转换为 IR 的，里面是怎么用 layout 的（在哪一个层次，可能是 ttir -> ttgir 层次？）
 
@@ -51,7 +51,7 @@ class KernelInterface(Generic[T]):
 class JITFunction(KernelInterface[T]): ...
 ```
 
-Therefore, `add_kernel[grid](x, y, output, n_elements, BLOCK_SIZE=1024)` is equivalent to `triton.jit(add_kernel).__getitem__(grid)(x, y, output, n_elements, BLOCK_SIZE=1024)`, which is `triton.jit(add_kernel).run(grid=grid, warmup=False, *(x, y, output, n_elements, BLOCK_SIZE=1024))`. The core computation is done in `kernel.run`, which is too complicated that I actually haven't fully figured out.
+Therefore, `add_kernel[grid](x, y, output, n_elements, BLOCK_SIZE=1024)` is equivalent to `triton.jit(add_kernel).__getitem__(grid)(x, y, output, n_elements, BLOCK_SIZE=1024)`, which is `triton.jit(add_kernel).run(grid=grid, warmup=False, *(x, y, output, n_elements, BLOCK_SIZE=1024))`. The core computation is done in `kernel.run`, which is too complicated that I actually haven't fully figured out how it functions yet.
 
 `typing` is so freaking strange. It makes a python script look like a C++ template code.
 
