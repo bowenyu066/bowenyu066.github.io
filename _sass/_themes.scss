@@ -108,7 +108,7 @@ $xing-color                 : #006567;
    ========================================================================== */
 
 /* push main article over so it doesn't sit underneath the sidebar */
-@media (min-width: 1300px) {
+@media (min-width: 1000px) {
 
   /* Applies to blog posts (articles) and standard pages */
   .has-toc .page__inner-wrap,
@@ -121,7 +121,7 @@ $xing-color                 : #006567;
 }
 
 /* On narrower screens, hide the TOC and reset padding */
-@media (max-width: 1300px) {
+@media (max-width: 1000px) {
   .has-toc #markdown-toc {
     display: none;
   }

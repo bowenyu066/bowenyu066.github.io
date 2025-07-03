@@ -42,7 +42,7 @@
     "vendor/magnific-popup/magnific-popup"
 ;
 
-@media (min-width: 1300px) {
+@media (min-width: 1000px) {
   .toc {
     position: fixed;
     top: 150px;
@@ -51,7 +51,7 @@
     max-height: 80vh;
     overflow-y: auto;
     background-color: #f8f9fa;
-    padding: 10px; 
+    padding: 0px; 
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
