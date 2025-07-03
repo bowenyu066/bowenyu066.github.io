@@ -1,7 +1,6 @@
 ---
 title: Random Notes
 date: 2025-6-17 14:48:00 +0800
-permalink: /posts/2025/06/random-notes/
 excerpt: "A personal memo containing various random notes and thoughts."
 tags: 
     - Computer Science
@@ -124,3 +123,29 @@ _cute_ops_gen.py
 我也是刚刚才意识到，之前做 UROP 时其实都是当调包侠，这是我第一次需要这么关心底层的东西，所以不知道该怎么把握细节信息量。学吧……
 
 今天实在无心工作。明天 sync 下他们究竟想要我干什么，再 get down。
+
+## July 2
+
+大致知道了这个星期的工作。刚拿到了 `vadd_ir.mlir` 这个文件，里面是最简单的（带有 layout 的）加法 IR。这个 IR 有六万多行，不过模块（或者说，kernel）分得很清楚，每个 kernel 大概三百多行，都是这个加法的一个实现，只不过从上往下是依次 lower 到越来越底层（比如，从 `cute` dialect 给 lower 到 `llvm`）。我们的目的就是搞清楚这个向下 lower 的过程是究竟如何将 `cute.xxx` 这些函数进行转换的。
+
+每个 kernel 里的 300 多行代码也不是每个都要看，主要聚焦 `arith.addf` 的参数是从哪里来的，这些参数在之前又经历了些什么。整个加法可能是 1024 * 1024 的大加法，但是每个 `arith.addf` 只负责 `vector<16xf32>` 的加法，这表明在之前肯定经历过切分。我们以最上层 kernel 为例，`arith.addf` 出现在这里：
+
+```mlir
+%43 = arith.addf %38, %41 : vector<16xf32>
+```
+
+向上 trace `%38` 和 `%41`：
+
+```mlir
+%38 = cute.memref.load_vec %33, row_major : !memref_rmem_f32_
+%41 = cute.memref.load_vec %34, row_major : !memref_rmem_f32_
+```
+
+这里就出现了 `cute` dialect 的函数 `cute.memref.load_vec`。向上继续 trace `%33` 和 `%34`：
+
+```mlir
+%33 = cute.make_fragment_like(%src_partitioned) <{elem_type = f32}> : !memref_gmem_f32_2 to !memref_rmem_f32_
+%34 = cute.make_fragment_like(%src_partitioned_76) <{elem_type = f32}> : !memref_gmem_f32_2 to !memref_rmem_f32_
+```
+
+依此类推，我们可以一步步向上 trace。这个过程中就会涉及到大量 `cute` dialect 的函数，我们要做的就是搞清楚每个过程中涉及到的 `cute` 函数接收什么参数、究竟是什么行为。有些函数可能很直白，比如 `cute.get_layout` 或者 `cute.get_shape`，但是别的函数可能就没有这么直观。当函数意思不够直观的时候，我们就得借助 `cute` 的文档、对应的 C++ 代码，或者向下 lower 的 kernel IR 来理解。这就是我这周的任务。
