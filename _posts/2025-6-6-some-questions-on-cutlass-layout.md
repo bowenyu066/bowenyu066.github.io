@@ -8,7 +8,7 @@ tags:
     - CUDA
     - CUTLASS
 categories: 
-    - Computer Science
+    - Notes
 ---
 
 ## Layout Composition

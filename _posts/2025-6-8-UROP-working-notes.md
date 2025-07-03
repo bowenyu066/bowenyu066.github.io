@@ -8,9 +8,7 @@ tags:
     - Physics
     - Computer Science
 categories: 
-    - UROP
-    - Physics
-    - Computer Science
+    - Notes
 ---
 
 This post is password-protected. Click below to view:

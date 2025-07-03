@@ -1,0 +1,404 @@
+---
+title: Notes on C++ Syntax
+date: 2025-7-3 17:36:21 +0800
+excerpt: "C++ syntax notes and examples."
+tags: 
+    - Computer Science
+    - C++
+categories: 
+    - Notes
+
+---
+
+*Very random notes on C++ syntax, mostly for my own reference. Does not follow any particular structure or order; just a hodgepodge of things I find useful or interesting.*
+
+# 1. `&` and `&&`, lvalue, rvalue and xvalue, `std::move`
+
+```cpp
+// The following use case comes from:
+// https://github.com/NVIDIA/cutlass/blob/main/include/cute/atom/copy_atom.hpp#L398
+template <class STensor>
+CUTE_HOST_DEVICE
+auto
+partition_S(STensor&& stensor) const {
+//static_assert(sizeof(typename remove_cvref_t<STensor>::value_type) == sizeof(typename TiledCopy::ValType),
+//              "Expected ValType for tiling SrcTensor.");
+auto thr_tensor = make_tensor(static_cast<STensor&&>(stensor).data(), TiledCopy::tidfrg_S(stensor.layout()));
+return thr_tensor(thr_idx_, _, repeat<rank_v<STensor>>(_));
+}
+```
+
+`&&` stands for **rvalue reference**.
+
+- **Lvalues**: These are expressions that refer to a memory location, such as variables declared, array elements, or objects returned by reference from a function. They can be assigned a value.
+- **Rvalues**: These are temporary, intermediate values. Examples include literals (like `42` or `3.14`), the result of arithmetic operations (like `x + y`), or objects returned by value from a function. They cannot be assigned a value.
+
+Correspondingly, C++ has two types of references:
+
+- **Lvalue references**: Denoted by `&`, they can bind to lvalues. For example, `int& x = a;` where `a` is an lvalue.
+
+```cpp
+void print_and_modify(std::string& s) { // s is an lvalue reference
+    s += " World";
+    std::cout << s << std::endl;
+}
+
+int main() {
+    std::string my_string = "Hello"; // my_string is an lvalue
+    print_and_modify(my_string);    // Works perfectly. my_string is now "Hello World"
+
+    // print_and_modify("Hello"); // ERROR! "Hello" is an rvalue literal.
+}
+```
+
+But there is also a small exception to the rule: a `const` lvalue reference **can** bind to an rvalue. 
+
+```cpp
+void print_string(const std::string& s) { // s is a const lvalue reference
+    std::cout << s << std::endl;
+}
+int main() {
+    print_string("Hello"); // Works! "Hello" is an rvalue literal, but can bind to a const lvalue reference.
+}
+```
+
+- **Rvalue references**: Denoted by `&&`, they can bind to rvalues. For example, `int&& x = 42;` where `42` is an rvalue. The primary purpose is to enable move semantics. It allows a function to "steal" the resources (like heap-allocated memory) from a temporary object instead of performing a costly copy. This is a massive optimization for types that manage resources, like `std::string` or `std::vector`.
+
+```cpp
+void process_data(std::string&& s) { // s is an rvalue reference
+    // We can safely "move" from s, because we know it's a temporary.
+    std::string new_string = std::move(s); // we'll explain what is `std::move` soon
+    std::cout << "Moved string: " << new_string << std::endl;
+}
+
+int main() {
+    std::string my_string = "Hello"; // my_string is an lvalue
+
+    // process_data(my_string); // ERROR! my_string is an lvalue.
+    process_data("Temporary String"); // Works! "Temporary String" is an rvalue.
+    process_data(my_string + " World"); // Works! The result of the expression is an rvalue.
+}
+```
+
+Apart from the lvalue and rvalue mentioned above, there are also **xvalues** (eXpiring values), which are a special kind of rvalue that represents an object that is about to be moved from. They are typically the result of calling `std::move()` on an lvalue. 
+
+```cpp
+std::string my_string = "Hello"; // my_string is an lvalue
+std::string&& xvalue = std::move(my_string); // my_string is now an xvalue
+// Note that `&&` can bind to both rvalues and xvalues
+```
+
+Now here's the question: what exactly is `std::move`? Its name is misleading in that it does not actually move anything. Instead, it simply takes an object (usually an lvalue with a name) and **casts it to an rvalue reference**. This is important because functions and constructors that are overloaded to accept an rvalue reference (`&&`) can then be called. These overloads are designed to be highly efficient by "stealing" or "moving" resources instead of copying them.
+
+```cpp
+#include <iostream>
+#include <string>
+#include <utility> // Required for std::move
+
+int main() {
+    // 1. We create a string. This is an lvalue.
+    // It allocates memory on the heap for its text.
+    std::string source = "This is a very long string that would be expensive to copy.";
+
+    std::cout << "Before move:\n";
+    std::cout << "  source: \"" << source << "\"\n";
+
+    // 2. We use std::move to cast 'source' to an rvalue.
+    // This allows the move constructor of std::string to be called for 'destination'.
+    std::string destination = std::move(source);
+
+    // 3. Instead of copying the text, 'destination' just takes the internal pointers
+    // from 'source'. 'source' is now empty. This is extremely fast.
+    std::cout << "\nAfter move:\n";
+    std::cout << "  destination: \"" << destination << "\"\n";
+    std::cout << "  source: \"" << source << "\"\n"; // The source is now in a "valid but unspecified" state.
+}
+```
+
+The result of the above code would be:
+
+```
+Before move:
+  source: "This is a very long string that would be expensive to copy."
+
+After move:
+  destination: "This is a very long string that would be expensive to copy."
+  source: ""
+```
+
+Now, it may seem confusing about why we use `std::string destination = std::move(source);` instead of `std::string&& destination = std::move(source);`. These are two fundamentally different things. To explain it, we would need to understand **constructing and assigning** objects in C++. We'll explain that in the next section.
+
+# 2. Object Construction, Assignments, and Destruction
+
+## Constructing Objects
+
+There are more ways to construct an object in C++ than you might think. Let's start with a simple `Widget` class that we pre-define:
+
+```cpp
+struct Widget {
+    int id;
+    std::string name;
+
+    // 1. Default Constructor
+    Widget() : id(0), name("Default") {
+        std::cout << "-> Default Constructor\n";
+    }
+
+    // 2. Parameterized Constructor
+    Widget(int i, std::string n) : id(i), name(std::move(n)) {
+        std::cout << "-> Parameterized Constructor (" << name << ")\n";
+    }
+
+    // 3. Copy Constructor
+    Widget(const Widget& other) : id(other.id), name(other.name) {
+        std::cout << "-> COPY Constructor (from " << other.name << ")\n";
+    }
+
+    // 4. Move Constructor
+    Widget(Widget&& other) noexcept : id(other.id), name(std::move(other.name)) {
+        other.id = -1; // Invalidate the moved-from object
+        std::cout << "-> MOVE Constructor (from " << name << ")\n";
+    }
+
+    // Destructor (called when the object is destroyed)
+    ~Widget() {
+        std::cout << "<- Destructor (" << name << ")\n";
+    }
+};
+```
+
+As you can see, we have defined four different constructors for the `Widget` class:
+
+- **Default Constructor**: This is called when you create an object without any parameters. It initializes the object with default values. The syntax for a general default constructor is:
+
+```cpp
+[Name]() : [Member1](value1), [Member2](value2) { /* body */ }
+```
+
+For those of you who are not familiar with the syntax, `: [Member1](value1), [Member2](value2)` is called an **initializer list**. It is basically equivalent to assigning values to the members of the class:
+
+```cpp
+[Name]() {
+    [Member1] = value1;
+    [Member2] = value2;
+    /* body */
+}
+```
+
+Calling it is straightforward:
+
+```cpp
+Widget w1; // Calls the default constructor
+```
+
+To create an rvalue (temporary) object, simply use `Widget();` would do. Rvalue objects are often used in contexts where you want to create an object without keeping a reference to it, such as when passing an object to a function that takes ownership of it.
+
+- **Parameterized Constructor**: This constructor takes parameters to initialize the object with specific values. The syntax is similar to the default constructor, but it includes parameters:
+
+```cpp
+[Name](Type1 param1, Type2 param2) : [Member1](param1), [Member2](param2) { /* body */ }
+```
+
+You can call it like this:
+
+```cpp
+Widget w2(42, "MyWidget"); // Calls the parameterized constructor with id=42 and name="MyWidget"
+```
+
+Again, you can also create an rvalue object by using `Widget(42, "MyWidget");`. 
+
+So far so good, *easy twisky*. But sometimes, we want to create a new object based on an existing one. This is where the next two constructors come in:
+
+- **Copy Constructor**: This constructor is called when you create a new object as a copy of an existing object. It takes a reference to the existing object as a parameter. The syntax is:
+
+```cpp
+[Name](const [Name]& other) : [Member1](other.Member1), [Member2](other.Member2) { /* body */ }
+```
+
+You can call it like this:
+
+```cpp
+Widget w3 = w2; // Calls the copy constructor, creating a new Widget with the same values as w2
+Widget w4 = Widget(); // Calls the default constructor, then the copy constructor to create w4 as a copy of the default Widget
+```
+
+Note that the copy constructor **must take a `const` reference to the existing object**. This is due to the reason we mentioned in section 1: an lvalue reference (`&`) can only bind to an lvalue, but a `const` lvalue reference can bind to both lvalues and rvalues. This allows the use case in `Widget w4 = Widget();`, where `Widget()` is an rvalue that can be bound to a `const` lvalue reference.
+
+- **Move Constructor**: This constructor is called when you create a new object by "moving" the resources from an existing object. It takes an rvalue reference to the existing object as a parameter. The syntax is:
+
+```cpp
+[Name]([Name]&& other) noexcept : [Member1](std::move(other.Member1)), [Member2](std::move(other.Member2)) { /* body */ }
+```
+
+You can call it like this:
+
+```cpp
+Widget w5 = std::move(w2); // Calls the move constructor, transferring resources from w2 to w5
+```
+
+There are two important things to note here.
+
+First, no more `const` in the parameter list, because what we're doing here is exactly to "steal" the resources from the existing object--namely, we are going to modify the existing object.
+
+Second, there's a `noexcept` keyword in the declaration. `noexcept` is a promise you make to the compiler that your function will not throw an exception. If an exception is thrown from a `noexcept` function, the program immediately calls `std::terminate` and crashes. But why must we use `noexcept`? When the compiler is moving a block of memory, it can have two options: either copy the memory (using the copy constructor) or move the memory (using the move constructor). But moving is dangerous: if the move constructor halts in the middle of the operation, it can leave the object in an inconsistent state (some resources moved, some not). Therefore, compilers follow a rule in these scenarios:
+
+- **If your move constructor is noexcept ✅**: The compiler knows the move operation cannot fail. It will confidently use your fast move constructor to move every element to the new memory location.
+- **If your move constructor is NOT noexcept ❌**: The compiler sees a risk and will play it safe. It will refuse to use your move constructor and fall back to the slower, but safer, copy constructor.
+
+If you forget to mark your move constructor and move assignment operator as noexcept, you will lose the performance benefits of move semantics in many common situations, like when elements are rearranged inside a container. The compiler will choose to copy your objects instead of moving them.
+
+> There's one sharp question that you might ask: after we've defined the move constructor, why do we still need to include the `const` in copy constructor? You said that the reason why we use `const` in the copy constructor is to allow binding to rvalues, but after the move semantics `&&` have been defined, there's no longer such use cases, so why bother using `const`? The key lies in the backward compatibility. The move semantics were introduced in C++11, but the copy constructor has been around since the beginning of C++, so there are many old codebases where no move semantics are defined. Also, we want to make sure that there's a fallback in case the move constructor does not work, such as when the object is not movable. Including a `const` is a necessary insurance policy that allows the copy constructor to be used in those cases.
+
+To sum up, the four constructors are used in different scenarios:
+
+- **Default Constructor**: When you want to create an object with default values.
+- **Parameterized Constructor**: When you want to create an object with specific values.
+- **Copy Constructor**: When you want to create a new object as a copy of an existing object.
+- **Move Constructor**: When you want to create a new object by transferring resources from an existing object.
+
+They have different use cases and syntaxes, and are automatically followed by `std::string`, `std::vector`, and other STL containers. If you want to create your own class, you must define these constructors on your own. But different ways of constructing an object can sometimes be mixed and tricky. So there's an additional syntax that can help you with that: **list initialization**, introduced in C++11. With only a pair of curly braces `{}`, it is now the preferred, "uniform" way to construct objects and can be used for almost every type of construction. The syntax is:
+
+```cpp
+Widget w1{}; // Calls the default constructor
+Widget w2{42, "MyWidget"}; // Calls the parameterized constructor with id=42 and name="MyWidget"
+Widget w3{w2}; // Calls the copy constructor, creating a new Widget with the same values as w2
+Widget w4{std::move(w2)}; // Calls the move constructor, transferring resources from w2 to w4
+```
+
+## Assigning Objects
+
+Constructing and assigning objects are two different things. When you construct an object, you create **a new instance of the class**. When you assign an object, you copy or move the values from one object to **another existing object**. Let's take a second look at our `Widget` class, but this time, we add two additional functions: `Widget& operator=(const Widget& other)` and `Widget& operator=(Widget&& other) noexcept`.
+
+```cpp
+struct Widget {
+    int id;
+    std::string name;
+
+    // 1. Default Constructor
+    Widget() : id(0), name("Default") {
+        std::cout << "-> Default Constructor\n";
+    }
+
+    // 2. Parameterized Constructor
+    Widget(int i, std::string n) : id(i), name(std::move(n)) {
+        std::cout << "-> Parameterized Constructor (" << name << ")\n";
+    }
+
+    // 3. Copy Constructor
+    Widget(const Widget& other) : id(other.id), name(other.name) {
+        std::cout << "-> COPY Constructor (from " << other.name << ")\n";
+    }
+
+    // 4. Move Constructor
+    Widget(Widget&& other) noexcept : id(other.id), name(std::move(other.name)) {
+        other.id = -1; // Invalidate the moved-from object
+        std::cout << "-> MOVE Constructor (from " << name << ")\n";
+    }
+
+    // 5. Copy Assignment Operator
+    Widget& operator=(const Widget& other) {
+        std::cout << "-> COPY assigning from " << other.name << "\n";
+        id = other.id;
+        name = other.name; // This is a deep copy for std::string
+        return *this;
+    }
+
+    // 6. Move Assignment Operator
+    Widget& operator=(Widget&& other) noexcept {
+        std::cout << "-> MOVE assigning from " << other.name << "\n";
+        id = other.id;
+        name = std::move(other.name); // Move the string's resources
+        other.id = -1; // Invalidate the moved-from object
+        return *this;
+    }
+
+    // Destructor (called when the object is destroyed)
+    ~Widget() {
+        std::cout << "<- Destructor (" << name << ")\n";
+    }
+};
+```
+
+- **Copy Assignment Operator**: This operator is called when you assign one object to another existing object. It takes a `const` reference to the source object and copies its values into the current object. The syntax is:
+
+```cpp
+[Name]& operator=(const [Name]& other) {
+    // Body of the function
+    // ... (copy values from `other` to `this`)
+    return *this; // Return a reference to the current object
+}
+```
+
+You can call it like this:
+
+```cpp
+Widget w1; // Calls the default constructor
+Widget w2(42, "MyWidget"); // Calls the parameterized constructor
+w1 = w2; // Calls the copy assignment operator, copying values from w2 to w1
+```
+
+Again, notice a `const` in the parameter list is necessary, because we want to allow the assignment of rvalues.
+
+- **Move Assignment Operator**: This operator is called when you assign an rvalue to an existing object. It takes an rvalue reference to the source object and "steals" its resources, leaving the source object in a valid but unspecified state. The syntax is:
+
+```cpp
+[Name]& operator=([Name]&& other) noexcept {
+    // Body of the function
+    // ... (move values from `other` to `this`)
+    return *this; // Return a reference to the current object
+}
+```
+
+You can call it like this:
+
+```cpp
+Widget w1; // Calls the default constructor
+Widget w2(42, "MyWidget"); // Calls the parameterized constructor
+w1 = std::move(w2); // Calls the move assignment operator, transferring resources from w2 to w1
+w1 = Widget(100, "Temporary Widget"); // Also calls the move assignment operator, because `Widget(100, "Temporary Widget")` is an rvalue
+```
+
+## Destructing Objects
+
+When an object goes out of scope or is explicitly deleted, its destructor is called. The destructor is a special member function that cleans up the resources used by the object. The syntax is:
+
+```cpp
+~[Name]() {
+    // Body of the destructor
+    // ... (clean up resources)
+}
+```
+
+The destructor is automatically called when the object goes out of scope or is deleted. For example:
+
+```cpp
+{
+    Widget w1; // Calls the default constructor
+} // w1 goes out of scope, implicitly calls the destructor
+Widget* w2 = new Widget(42, "MyWidget"); // Calls the parameterized constructor
+delete w2; // Explicitly calls the destructor for w2, then frees the memory
+```
+
+If you don't define a destructor, the compiler provides a default one that does nothing. However, if your class manages resources (like dynamic memory, file handles, etc.), you should define a destructor to release those resources.
+
+## Summary
+
+Summarizing the above, we can conclude the so-called **Rule of the Big Five**. It states that if you write any one of the following, you should consider all five:
+
+1. **Destructor** (`~MyClass()`): Cleans up resources when the object is destroyed.
+2. **Copy Constructor** (`MyClass(const MyClass&)`): Creates a new object as a copy of an existing object.
+3. **Move Constructor** (`MyClass(Myclass&&) noexcept`): Creates a new object by transferring resources from an existing object.
+4. **Copy Assignment Operator** (`MyClass& operator=(const MyClass&)`): Assigns values from one existing object to another.
+5. **Move Assignment Operator** (`MyClass& operator=(MyClass&&) noexcept`): Transfers resources from one existing object to another.
+
+> However, in modern C++, the best practice is to follow the **Rule of Zero**. This means you should avoid writing any of these functions unless absolutely necessary. Instead, rely on smart pointers (like `std::unique_ptr` and `std::shared_ptr`) and standard library containers (like `std::vector`, `std::string`, etc.) that manage resources automatically. This way, you can avoid the complexity and potential pitfalls of manual resource management.
+
+## Answer to the Question in Section 1: Difference between `std::string destination = std::move(source);` and `std::string&& destination = std::move(source);`
+
+After getting through all these, we can finally answer the question in section 1.
+
+It becomes clear that `std::string destination = std::move(source);` is a **construction** of a new `std::string` object named `destination`, which is initialized by moving the contents of `source`. This means that `destination` will have its own copy of the data, and `source` will be left in a valid but unspecified state.
+
+But what is `std::string&& destination = std::move(source);`? This is a **declaration** of a new rvalue reference named `destination`, which binds to the rvalue returned by `std::move(source)`. This means that `destination` is not a new object, but rather a reference to the existing rvalue object, `source`, and it can be used to modify or access the data in `source` directly. Again, `destination` becomes a **direct alias** for `source`, and they are two different names for the exact same object in memory.
+
+Now, it might be confusing to think that something that has a name, like `destination` or `source`, is an rvalue reference. C++ has a critical rule here: a **named rvalue reference** (like `destination` here) is treated as an **lvalue** in subsequent code, so using `destination` later (in construction or assignment) **won't trigger move semantics automatically**. Think of it this way: something that has a name can be referred to over and over again throughout the code, so if the compiler really treats it as an rvalue and moves from it every time we use the name, it would be a disaster. Therefore, to enforce safety, C++ requires that you explicitly use `std::move(destination)` to indicate that you want to treat `destination` as an rvalue and trigger move semantics, even though `destination` is an rvalue reference. In practice, one would almost never use `std::string&& destination = std::move(source);` explicitly. The named rvalue reference is more commonly used for  **function overload resolution**; by providing two versions of a function—one that takes an lvalue reference (`&`) and one that takes an rvalue reference (`&&`), you let the compiler automatically choose the correct and most efficient path based on the argument you provide. But after getting inside the function, the rvalue reference is treated as an lvalue, so you still need to use `std::move()` to trigger move semantics.

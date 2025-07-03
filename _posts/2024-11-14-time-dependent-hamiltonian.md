@@ -5,7 +5,8 @@ permalink: /posts/2024/11/time-dependent-hamiltonian/
 excerpt: "We prove the explicit expression of the time-dependent Hamiltonian in Heisenberg picture in this post."
 tags: 
     - Physics
-categories: Physics
+categories:
+    - Notes
 ---
 
 The Heisenberg Hamiltonian

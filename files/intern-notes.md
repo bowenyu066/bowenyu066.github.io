@@ -1,11 +1,11 @@
 ---
-title: Random Notes
+title: Notes on Intern Work
 date: 2025-6-17 14:48:00 +0800
-excerpt: "A personal memo containing various random notes and thoughts."
+excerpt: "Notes on my work as an intern at Intel."
 tags: 
     - Computer Science
 categories: 
-    - Memo
+    - Notes
 ---
 
 https://www.coursera.org/learn/build-a-computer
@@ -149,3 +149,7 @@ _cute_ops_gen.py
 ```
 
 依此类推，我们可以一步步向上 trace。这个过程中就会涉及到大量 `cute` dialect 的函数，我们要做的就是搞清楚每个过程中涉及到的 `cute` 函数接收什么参数、究竟是什么行为。有些函数可能很直白，比如 `cute.get_layout` 或者 `cute.get_shape`，但是别的函数可能就没有这么直观。当函数意思不够直观的时候，我们就得借助 `cute` 的文档、对应的 C++ 代码，或者向下 lower 的 kernel IR 来理解。这就是我这周的任务。
+
+## July 3
+
+今天继续看昨天看的，但除了看 mlir dump 文件外，还转过头来看看原 py 代码里的 kernel 究竟是怎么写的，好理解下这个 kernel 到底在干什么。CUTLASS C++ 里也有一些函数的用法，比如 `cute.tiled.copy.partition_S`。`atom` 是什么意思也许也可以在相同地方找到。除此以外，CuTe 的文档里也有一些函数的用法。另外，除了保留与 `arith.addf` 相关的 kernel op 外，存储部分的代码也要保留下来。建议我弄个 github repo 写点向下转换的伪代码，可以用 Python 也可以用 C++。

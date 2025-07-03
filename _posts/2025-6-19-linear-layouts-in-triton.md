@@ -6,7 +6,7 @@ excerpt: "Notes on linear layouts in Triton and its conversion with various trad
 tags: 
     - Computer Science
 categories: 
-    - Computer Science
+    - Notes
 ---
 
 This post is password-protected. Click below to view:
