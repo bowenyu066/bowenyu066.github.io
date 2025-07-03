@@ -1,7 +1,7 @@
 ---
 title: Some Questions on Cutlass Layout
 date: 2025-6-6 11:43:00 +0800
-permalink: /posts/2025/06/questions-on-cutlass-layout
+permalink: /posts/notes/questions-on-cutlass-layout
 excerpt: "My own notes and questions on the layout of CUTLASS."
 tags: 
     - Computer Science

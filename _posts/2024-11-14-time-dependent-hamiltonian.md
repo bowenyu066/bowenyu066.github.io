@@ -1,7 +1,7 @@
 ---
 title: On the Explicit Expression of a Time-dependent Hamiltonian in Heisenberg Picture
 date: 2024-11-14 11:28:06
-permalink: /posts/2024/11/time-dependent-hamiltonian/
+permalink: /posts/notes/time-dependent-hamiltonian/
 excerpt: "We prove the explicit expression of the time-dependent Hamiltonian in Heisenberg picture in this post."
 tags: 
     - Physics

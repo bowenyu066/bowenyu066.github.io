@@ -1,7 +1,7 @@
 ---
 title: Linear Layouts in Triton
 date: 2025-7-3 17:44:03 +0800
-permalink: /posts/2025/07/linear-layouts-in-triton/
+permalink: /posts/notes/linear-layouts-in-triton/
 excerpt: "Notes on linear layouts in Triton and its conversion with various traditional layout types."
 tags: 
     - Computer Science

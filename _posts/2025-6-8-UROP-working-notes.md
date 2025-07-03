@@ -1,7 +1,7 @@
 ---
 title: UROP Working Notes
 date: 2025-6-8 01:52:00 +0800
-permalink: /posts/2025/06/UROP-working-notes/
+permalink: /posts/notes/UROP-working-notes/
 excerpt: "My own notes and questions on the UROP project."
 tags: 
     - UROP
