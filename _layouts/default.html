@@ -11,7 +11,10 @@ layout: compress
     {% include head/custom.html %}
   </head>
 
-  <body>
+  <body class="
+  {% if page.author_profile %}has-profile{% else %}no-profile{% endif %}
+  {% if page.toc %} has-toc{% endif %}
+">
 
     {% include browser-upgrade.html %}
     {% include masthead.html %}

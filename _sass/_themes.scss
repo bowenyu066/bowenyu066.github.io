@@ -103,3 +103,79 @@ $vine-color                 : #00bf8f;
 $youtube-color              : #bb0000;
 $xing-color                 : #006567;
    
+/* ==========================================================================
+   TABLE OF CONTENTS – sticky sidebar
+   ========================================================================== */
+
+#markdown-toc {
+  position: fixed;
+  top: 4rem;              /* cle ars the nav bar */
+  right: 2rem;            /* swap to left: 2rem if you prefer a left-hand TOC */
+  width: 300px;
+  max-height: 100vh;
+  overflow-y: auto;
+  padding: 0.5rem 1.5rem;
+  background: #f9f9f9;
+  border-left: 3px solid #ccc;
+  border-radius: 0 4px 4px 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  z-index: 0;            /* keeps it above page content */
+}
+
+/* tidy up list styling inside the TOC */
+#markdown-toc ul {
+  list-style: inside;
+  margin: 0;
+  padding-left: 0;
+}
+
+#markdown-toc ul ul {        /* nested levels */
+  margin-left: 1rem;
+}
+
+#markdown-toc li {           /* spacing between items */
+  margin: 0.35em 0;
+}
+
+/* links */
+#markdown-toc a {
+  color: inherit;
+  text-decoration: none;
+}
+
+#markdown-toc a:hover {
+  text-decoration: underline;
+}
+
+/* remove grey code-block backgrounds that appear inside link text */
+#markdown-toc code {
+  background: none;
+  padding: 0;
+  font-size: 0.85em;
+}
+
+/* push main article over so it doesn't sit underneath the sidebar */
+@media (min-width: 950px) {
+
+  /* Applies to blog posts (articles) and standard pages */
+  .has-toc .page__inner-wrap,
+  .has-toc .page__content,
+  .has-toc .post,
+//   .has-toc .page,
+  .has-toc .page {
+    padding-right: 150px;   /* matches sidebar width + gap */
+    box-sizing: border-box; /* ensure padding factors into width */
+  }
+}
+
+/* On narrower screens, hide the TOC and reset padding */
+@media (max-width: 950px) {
+  .has-toc #markdown-toc {
+    display: none;
+  }
+  .has-toc .page__inner-wrap,
+  .has-toc .page__content {
+    padding-right: 0;
+  }
+}

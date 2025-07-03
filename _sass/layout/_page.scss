@@ -20,7 +20,25 @@
   @include breakpoint($large) {
     @include span(10 of 12 last);
     @include prefix(0.5 of 12);
-    @include suffix(2 of 12);
+    @include suffix(0 of 12);
+  }
+
+  .page__inner-wrap {
+    @include full();
+
+    .page__content,
+    .page__meta,
+    .page__share {
+      @include full();
+    }
+  }
+}
+
+.no-profile .page {
+  @include breakpoint($large) {
+    @include span(12 of 12); // make it wider
+    @include prefix(0 of 12);
+    @include suffix(0 of 12);
   }
 
   .page__inner-wrap {
@@ -191,34 +209,34 @@
   }
 }
 
-/*
-   Social sharing
-   ========================================================================== */
+// /*
+//    Social sharing
+//    ========================================================================== */
 
-.page__share {
-  margin-top: 2em;
-  padding-top: 1em;
-  border-top: 1px solid var(--global-border-color);
+// .page__share {
+//   margin-top: 2em;
+//   padding-top: 1em;
+//   border-top: 1px solid var(--global-border-color);
 
-  @include breakpoint(max-width $small) {
-    .btn span {
-      border: 0;
-      clip: rect(0 0 0 0);
-      height: 1px;
-      margin: -1px;
-      overflow: hidden;
-      padding: 0;
-      position: absolute;
-      width: 1px;
-    }
-  }
-}
+//   @include breakpoint(max-width $small) {
+//     .btn span {
+//       border: 0;
+//       clip: rect(0 0 0 0);
+//       height: 1px;
+//       margin: -1px;
+//       overflow: hidden;
+//       padding: 0;
+//       position: absolute;
+//       width: 1px;
+//     }
+//   }
+// }
 
-.page__share-title {
-  margin-bottom: 10px;
-  font-size: $type-size-6;
-  text-transform: uppercase;
-}
+// .page__share-title {
+//   margin-bottom: 10px;
+//   font-size: $type-size-6;
+//   text-transform: uppercase;
+// }
 
 
 /*
@@ -277,100 +295,100 @@
 }
 
 
-/*
-   Comments
-   ========================================================================== */
+// /*
+//    Comments
+//    ========================================================================== */
 
-.page__comments {
-  @include full();
-}
+// .page__comments {
+//   @include full();
+// }
 
-.page__comments-title {
-  margin-top: 2rem;
-  margin-bottom: 10px;
-  padding-top: 2rem;
-  font-size: $type-size-6;
-  border-top: 1px solid var(--global-border-color);
-  text-transform: uppercase;
-}
+// .page__comments-title {
+//   margin-top: 2rem;
+//   margin-bottom: 10px;
+//   padding-top: 2rem;
+//   font-size: $type-size-6;
+//   border-top: 1px solid var(--global-border-color);
+//   text-transform: uppercase;
+// }
 
-.page__comments-form {
-  padding: 1em;
-  background: var(--global-border-color);
-  transition: $global-transition;
+// .page__comments-form {
+//   padding: 1em;
+//   background: var(--global-border-color);
+//   transition: $global-transition;
 
-  &.disabled {
-    input,
-    button,
-    textarea,
-    label {
-      pointer-events: none;
-      cursor: not-allowed;
-      filter: alpha(opacity=65);
-      box-shadow: none;
-      opacity: 0.65;
-    }
-  }
-}
+//   &.disabled {
+//     input,
+//     button,
+//     textarea,
+//     label {
+//       pointer-events: none;
+//       cursor: not-allowed;
+//       filter: alpha(opacity=65);
+//       box-shadow: none;
+//       opacity: 0.65;
+//     }
+//   }
+// }
 
-.comment {
-  @include clearfix();
-  margin: 1em 0;
+// .comment {
+//   @include clearfix();
+//   margin: 1em 0;
 
-  &:not(:last-child) {
-    border-bottom: 1px solid var(--global-border-color);
-  }
-}
+//   &:not(:last-child) {
+//     border-bottom: 1px solid var(--global-border-color);
+//   }
+// }
 
-.comment__avatar-wrapper {
-  float: left;
-  width: 60px;
-  height: 60px;
+// .comment__avatar-wrapper {
+//   float: left;
+//   width: 60px;
+//   height: 60px;
 
-  @include breakpoint($large) {
-    width: 100px;
-    height: 100px;
-  }
-}
+//   @include breakpoint($large) {
+//     width: 100px;
+//     height: 100px;
+//   }
+// }
 
-.comment__avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+// .comment__avatar {
+//   width: 40px;
+//   height: 40px;
+//   border-radius: 50%;
 
-  @include breakpoint($large) {
-    width: 80px;
-    height: 80px;
-    padding: 5px;
-    border: 1px solid var(--global-border-color);
-  }
-}
+//   @include breakpoint($large) {
+//     width: 80px;
+//     height: 80px;
+//     padding: 5px;
+//     border: 1px solid var(--global-border-color);
+//   }
+// }
 
-.comment__content-wrapper {
-  float: right;
-  width: calc(100% - 60px);
+// .comment__content-wrapper {
+//   float: right;
+//   width: calc(100% - 60px);
 
-  @include breakpoint($large) {
-    width: calc(100% - 100px);
-  }
-}
+//   @include breakpoint($large) {
+//     width: calc(100% - 100px);
+//   }
+// }
 
-.comment__author {
-  margin: 0;
+// .comment__author {
+//   margin: 0;
 
-  a {
-    text-decoration: none;
-  }
-}
+//   a {
+//     text-decoration: none;
+//   }
+// }
 
-.comment__date {
-  @extend .page__meta;
-  margin: 0;
+// .comment__date {
+//   @extend .page__meta;
+//   margin: 0;
 
-  a {
-    text-decoration: none;
-  }
-}
+//   a {
+//     text-decoration: none;
+//   }
+// }
 
 
 /*
@@ -378,20 +396,20 @@
    ========================================================================== */
 
 .page__related {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center; // center all items horizontally
+  gap: 2em;                // optional: spacing between cards
   margin-top: 2em;
   padding-top: 1em;
   border-top: 1px solid var(--global-border-color);
-  @include clearfix();
-  float: left;
-
-  @include breakpoint($large) {
-    @include pre(2.5 of 12);
-  }
-
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
+  background: var(--global-bg-color) ;
+  width: 105%;
+  z-index: 100; // ensure it appears above other content
+}
+  
+.page__related .grid__item {
+  flex: 0 1 500px; // optional: card width, adjust as you like
 }
 
 .page__related-title {
