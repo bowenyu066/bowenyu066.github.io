@@ -7,11 +7,7 @@ tags:
     - Computer Science
 categories: 
     - Notes
-toc: true
 ---
-
-* Table of Contents
-{:toc}
 
 **This post is temporarily written in Chinese for convenience. It may be converted to an English version later. If you prefer reading in English, you may use the default translation feature of your browser. Sorry for the inconvenience!**
 
