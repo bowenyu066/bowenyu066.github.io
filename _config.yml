@@ -246,6 +246,7 @@ defaults:
       path: ""
       type: posts
     values:
+      head_custom: "_includes/head-custom.html"
       layout: single
       author_profile: false
       read_time: true
@@ -260,6 +261,7 @@ defaults:
       path: ""
       type: pages
     values:
+      head_custom: "_includes/head-custom.html"
       layout: single
       author_profile: false
   # _teaching
@@ -267,6 +269,7 @@ defaults:
       path: ""
       type: teaching
     values:
+      head_custom: "_includes/head-custom.html"
       layout: single
       author_profile: false
       share: false
@@ -276,6 +279,7 @@ defaults:
       path: ""
       type: publications
     values:
+      head_custom: "_includes/head-custom.html"
       layout: single
       author_profile: false
       share: false
