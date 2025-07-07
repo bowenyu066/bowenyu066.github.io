@@ -177,3 +177,19 @@ Other than the above attributes, the `HopperWgmmaGemmKernel` class also contains
 The main computation is performed in `HopperWgmmaGemmKernel.__call__(self, a, b, c, stream)`. `a`, `b`, and `c` are `cute.Tensor`'s; `stream` is called a "CUDA stream for asynchronous execution", of which I don't know the exact meaning. The layout information (cute layout) is already stored in `cute.tensor` objects, and can be accessed via `cutlass.utils.LayoutEnum.from_tensor(a)`.
 
 [^1]: By default, the logical tensor indices are encoded in column-major order. See https://github.com/NVIDIA/cutlass/discussions/2197.
+
+<script src="https://giscus.app/client.js"
+        data-repo="bowenyu066/bowenyu066.github.io"
+        data-repo-id="R_kgDOOSbJ2A"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOOSbJ2M4CsmZz"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="preferred_color_scheme"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
+</script>
