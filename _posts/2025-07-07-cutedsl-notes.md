@@ -56,6 +56,7 @@ using ThreadLayout = Layout<Shape<_2, _2, _2>, Stride<_1, _16, _4>>;
 > It is worth pointing out that the above `ThreadLayout` has already taken the positions of registers (accumulators) into account. If we solely extract the thread indices, the 8 threads would be arranged in a 4x2 grid:
 > 
 > ```text
+> 
 > T0 T2
 > T1 T3
 > T4 T6
@@ -65,6 +66,7 @@ using ThreadLayout = Layout<Shape<_2, _2, _2>, Stride<_1, _16, _4>>;
 > Such thread arrangement can be described as:
 > 
 > ```cpp
+>
 > using ThreadLayout = Layout<Shape<_2, _2, _2>, Stride<_1, _4, _2>>;
 > ```
 >
@@ -185,3 +187,19 @@ Other than the above attributes, the `HopperWgmmaGemmKernel` class also contains
 The main computation is performed in `HopperWgmmaGemmKernel.__call__(self, a, b, c, stream)`. `a`, `b`, and `c` are `cute.Tensor`'s; `stream` is called a "CUDA stream for asynchronous execution", of which I don't know the exact meaning. The layout information (cute layout) is already stored in `cute.tensor` objects, and can be accessed via `cutlass.utils.LayoutEnum.from_tensor(a)`.
 
 [^1]: By default, the logical tensor indices are encoded in column-major order. See https://github.com/NVIDIA/cutlass/discussions/2197.
+
+<script src="https://giscus.app/client.js"
+        data-repo="bowenyu066/bowenyu066.github.io"
+        data-repo-id="R_kgDOOSbJ2A"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOOSbJ2M4CsmZz"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="preferred_color_scheme"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
+</script>
