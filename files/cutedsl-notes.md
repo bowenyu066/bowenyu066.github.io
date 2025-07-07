@@ -43,6 +43,23 @@ where `T=4,5,6,7` are the 4th, 5th, 6th, 7th logical thread id of the MMA corres
 using ThreadLayout = Layout<Shape<_2, _2, _2>, Stride<_1, _16, _4>>;
 ```
 
+> It is worth pointing out that the above `ThreadLayout` has already taken the positions of registers (accumulators) into account. If we solely extract the thread indices, the 8 threads would be arranged in a 4x2 grid:
+> 
+> ```text
+> T0 T2
+> T1 T3
+> T4 T6
+> T5 T7
+> ```
+>
+> Such thread arrangement can be described as:
+> 
+> ```cpp
+> using ThreadLayout = Layout<Shape<_2, _2, _2>, Stride<_1, _4, _2>>;
+> ```
+>
+> In examples such as `elementwise_add.py`, the latter `ThreadLayout` is used. See below for more details.
+
 Next, fix `logical_thr_id = 0` and change `logical_val_id`. But first, we need to specify how values are ordered within a thread. The picture below illustrates the value ordering:
 
 ![Value Ordering Example](/images/posts/cutedsl-notes/tv-layout-2.png)
@@ -72,6 +89,42 @@ Finally, we can combine the two layouts to get the TV layout:
 using TVLayout = Layout<Shape <Shape <_2,  _2, _2>, Shape <_2, _2,  _2>>,
                         Stride<Stride<_1, _16, _4>, Stride<_8, _2, _32>>>;
 ```
+
+### In `elementwise_add.py`
+
+Ampere GPU uses a `128 = 4 x 32` thread block arrangement:
+
+```text
+    +----+----+----+----+-----+----+
+    |    | 0  | 1  | 2  | ... | 31 |
+    +----+----+----+----+-----+----+
+    | 0  | T0 | T1 | T2 | ... | T31|
+    +----+----+----+----+-----+----+
+    | 1  |T32 |T33 |T34 | ... |T63 |
+    +----+----+----+----+-----+----+
+    | 2  |T64 |T65 |T66 | ... |T95 |
+    +----+----+----+----+-----+----+
+    | 3  |T96 |T97 |T98 | ... |T127|
+    +----+----+----+----+-----+----+
+```
+
+As input tensors are laid out in row-major order, we must also use a row-major TV layout. The above `ThreadLayout` can be described as `(4,32):(32,1)`, or equivalently in Python:
+
+```python
+thr_layout = cute.make_ordered_layout((4, 32), order=(1, 0))
+```
+
+> This `thr_layout` is the layout after extracting the thread indices, as explained above.
+
+The `make_ordered_layout` function aligns strides with the order of the dimensions without manual specification.
+
+Ampere GPU supports a maximum of 128-bit load/store operations, which means it can load `128 // dtype.width` elements per thread. The shape of the value layout is `(4, 128 // dtype.width)`. *(A bit confused here: does this mean each thread executes four 128-bit load/store operations at a time? Why can the number of registers (values) be changed--or does it just mean that the number of registers is always 4 per thread, but the number of elements per register is `128 // dtype.width`, i.e. each register is sliced? Copilot thinks the latter is true.)* `cute` provides a convenient function `make_layout_tv` to create a TV layout using `thr_layout` and `val_layout`:
+
+```python
+val_layout = cute.make_layout((4, 128 // dtype.width), order=(1, 0)) # as explained before, using row-major layouts
+tiler_mn, tv_layout = cute.make_layout_tv(thr_layout, val_layout)
+```
+
 
 # `dense_gemm.py` for Hopper GPU in CuTeDSL
 
