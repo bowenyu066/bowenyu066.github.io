@@ -168,3 +168,19 @@ Composition test passed!
 ```
 
 So, here's everything I have so far. I am still not sure what the conditions are for the left-distributive property to hold, but I do know that it does not hold in general. The CUTLASS library has been released for over two years (maybe), but I have not seen any discussions on this topic. Maybe it is indeed a non-trivial problem, but maybe it isn't a big deal and does not really affect anything.
+
+<script src="https://giscus.app/client.js"
+        data-repo="bowenyu066/bowenyu066.github.io"
+        data-repo-id="R_kgDOOSbJ2A"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOOSbJ2M4CsmZz"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="light"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
+</script>

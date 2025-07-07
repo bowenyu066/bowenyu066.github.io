@@ -99,7 +99,7 @@ comments:
     category_id          : "DIC_kwDOOSbJ2M4CsmZz"
     discussion_term      : "pathname"                    # 1 discussion ↔︎ 1 page
     reactions_enabled    : '1'                           # emoji love
-    theme                : "preferred_color_scheme"      # auto light/dark
+    theme                : "light"      # auto light/dark
   disqus:
     shortname            :
   discourse:
@@ -241,12 +241,17 @@ collections:
 
 # These settings control how pages and collections are included in the site
 defaults:
+  # global
+  - scope:
+      path: ""     # all files
+    values:
+      custom_css: ["assets/css/custom.scss"]
+      head_custom: "_includes/head-custom.html"
   # _posts
   - scope:
       path: ""
       type: posts
     values:
-      head_custom: "_includes/head-custom.html"
       layout: single
       author_profile: false
       read_time: true
@@ -261,7 +266,6 @@ defaults:
       path: ""
       type: pages
     values:
-      head_custom: "_includes/head-custom.html"
       layout: single
       author_profile: false
   # _teaching
@@ -269,7 +273,6 @@ defaults:
       path: ""
       type: teaching
     values:
-      head_custom: "_includes/head-custom.html"
       layout: single
       author_profile: false
       share: false
@@ -279,7 +282,6 @@ defaults:
       path: ""
       type: publications
     values:
-      head_custom: "_includes/head-custom.html"
       layout: single
       author_profile: false
       share: false

@@ -56,7 +56,7 @@ My resume is attached [here](https://bowenyu066.github.io/cv/).
         data-reactions-enabled="1"
         data-emit-metadata="0"
         data-input-position="bottom"
-        data-theme="preferred_color_scheme"
+        data-theme="light"
         data-lang="en"
         crossorigin="anonymous"
         async>

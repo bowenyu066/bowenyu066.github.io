@@ -690,7 +690,7 @@ L(T) = [{0, 4, 8, 12}, {1, 5, 9, 13}, {2, 6, 10, 14}, {3, 7, 11, 15},
         data-reactions-enabled="1"
         data-emit-metadata="0"
         data-input-position="bottom"
-        data-theme="preferred_color_scheme"
+        data-theme="light"
         data-lang="en"
         crossorigin="anonymous"
         async>

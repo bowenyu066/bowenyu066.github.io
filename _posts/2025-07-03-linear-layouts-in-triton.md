@@ -703,3 +703,19 @@ L(T) = [{0, 4, 8, 12}, {1, 5, 9, 13}, {2, 6, 10, 14}, {3, 7, 11, 15},
 [^2]: https://github.com/triton-lang/triton/blob/main/include/triton/Dialect/TritonGPU/IR/TritonGPUAttrDefs.td
 [^3]: https://github.com/triton-lang/triton/blob/main/lib/Dialect/TritonGPU/IR/LinearLayoutConversions.cpp
 [^4]: https://github.com/triton-lang/triton/blob/main/include/triton/Tools/LinearLayout.h
+
+<script src="https://giscus.app/client.js"
+        data-repo="bowenyu066/bowenyu066.github.io"
+        data-repo-id="R_kgDOOSbJ2A"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOOSbJ2M4CsmZz"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="light"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
+</script>

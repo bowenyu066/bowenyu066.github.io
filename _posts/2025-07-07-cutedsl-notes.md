@@ -198,7 +198,7 @@ The main computation is performed in `HopperWgmmaGemmKernel.__call__(self, a, b,
         data-reactions-enabled="1"
         data-emit-metadata="0"
         data-input-position="bottom"
-        data-theme="preferred_color_scheme"
+        data-theme="light"
         data-lang="en"
         crossorigin="anonymous"
         async>
