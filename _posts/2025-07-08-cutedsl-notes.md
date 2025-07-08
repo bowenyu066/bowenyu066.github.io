@@ -33,6 +33,7 @@ Before CuTeDSL, CUDA programming was done in C++ with the CUTLASS library, which
 A typical CuTeDSL program consists of three parts: **a main function, a host function, and a kernel function**.
 
 ```python
+
 import cutlass
 import cutlass.cute as cute
 from cutlass.cute.runtime import from_dlpack
@@ -67,6 +68,7 @@ def main():
 The execution flow is:
 
 ```text
+
 main function → compilation → host function → kernel launch → GPU execution
 ```
 
@@ -86,6 +88,7 @@ Let's investigate an example below, of an 8x8 matrix:
 Each thread owns 8 values. To describe the layout, first focus on changing `logical_thr_id` while keeping `logical_val_id = 0` fixed:
 
 ```text
+
 (T=0, V=0) -> (0, 0) = 0
 (T=1, V=0) -> (1, 0) = 1
 (T=2, V=0) -> (0, 2) = 16
@@ -99,12 +102,14 @@ Each thread owns 8 values. To describe the layout, first focus on changing `logi
 where `T=4,5,6,7` are the 4th, 5th, 6th, 7th logical thread id of the MMA corresponding to thread indices of `16`,`17`,`18`,`19` of the warp. Such mapping between logical and real thread indices is to be recorded in `ThrID` mapping (and this is why we call the above thread indices as "*logical* thread id"). We may infer from `T=0` to `T=7` data that there exist three types of periodicity: `T=0 -> T=1` with stride `1`, `T=0 -> T=2` with stride `16`, and `T=0 -> T=4` with stride `4`. The layout of `logical_thr_id` is thus described as:
 
 ```cpp
+
 using ThreadLayout = Layout<Shape<_2, _2, _2>, Stride<_1, _16, _4>>;
 ```
 
 > It is worth pointing out that the above `ThreadLayout` has already taken the positions of registers (accumulators) into account. If we solely extract the thread indices, the 8 threads would be arranged in a 4x2 grid:
 > 
 > ```text
+>
 > T0 T2
 > T1 T3
 > T4 T6
@@ -114,6 +119,7 @@ using ThreadLayout = Layout<Shape<_2, _2, _2>, Stride<_1, _16, _4>>;
 > Such thread arrangement can be described as:
 > 
 > ```cpp
+>
 > using ThreadLayout = Layout<Shape<_2, _2, _2>, Stride<_1, _4, _2>>;
 > ```
 >
@@ -126,6 +132,7 @@ Next, fix `logical_thr_id = 0` and change `logical_val_id`. But first, we need t
 Given such ordering, we can now describe the mapping of `logical_val_id` to `(m, n)` indices:
 
 ```text
+
 (T=0, V=0) -> (0, 0) = 0
 (T=0, V=1) -> (0, 1) = 8
 (T=0, V=2) -> (2, 0) = 2
@@ -139,12 +146,14 @@ Given such ordering, we can now describe the mapping of `logical_val_id` to `(m,
 The rule is clear: there also exist three types of periodicity: `V=0 -> V=1` with stride `8`, `V=0 -> V=2` with stride `2`, and `V=0 -> V=4` with stride `32`. The layout of `logical_val_id` can thus described as:
 
 ```cpp
+
 using ValLayout = Layout<Shape<_2, _2, _2>, Stride<_8, _2, _32>>;
 ```
 
 Finally, we can combine the two layouts to get the TV layout:
 
 ```cpp
+
 using TVLayout = Layout<Shape <Shape <_2,  _2, _2>, Shape <_2, _2,  _2>>,
                         Stride<Stride<_1, _16, _4>, Stride<_8, _2, _32>>>;
 ```
@@ -154,6 +163,7 @@ using TVLayout = Layout<Shape <Shape <_2,  _2, _2>, Shape <_2, _2,  _2>>,
 Ampere GPU uses a `128 = 4 x 32` thread block arrangement:
 
 ```text
+
     +----+----+----+----+-----+----+
     |    | 0  | 1  | 2  | ... | 31 |
     +----+----+----+----+-----+----+
@@ -170,6 +180,7 @@ Ampere GPU uses a `128 = 4 x 32` thread block arrangement:
 As input tensors are laid out in row-major order, we must also use a row-major TV layout. The above `ThreadLayout` can be described as `(4,32):(32,1)`, or equivalently in Python:
 
 ```python
+
 thr_layout = cute.make_ordered_layout((4, 32), order=(1, 0))
 ```
 
@@ -180,6 +191,7 @@ The `make_ordered_layout` function aligns strides with the order of the dimensio
 Ampere GPU supports a maximum of 128-bit load/store operations, which means it can load `128 // dtype.width` elements per thread. The shape of the value layout is `(4, 128 // dtype.width)`. *(A bit confused here: does this mean each thread executes four 128-bit load/store operations at a time? Why can the number of registers (values) be changed--or does it just mean that the number of registers is always 4 per thread, but the number of elements per register is `128 // dtype.width`, i.e. each register is sliced? Copilot thinks the latter is true.)* `cute` provides a convenient function `make_layout_tv` to create a TV layout using `thr_layout` and `val_layout`:
 
 ```python
+
 val_layout = cute.make_layout((4, 128 // dtype.width), order=(1, 0)) # as explained before, using row-major layouts
 tiler_mn, tv_layout = cute.make_layout_tv(thr_layout, val_layout)
 ```
@@ -189,6 +201,7 @@ The `tiler_mn` is the tiling size `(num_vals, num_thrs)` [^3], which is `(4 * 12
 > In the example script, when dealing with `Float32` data type, `dtype.width` is `32`, so `128 // dtype.width` is `4`. The `thr_layout` is `(4, 32):(32, 1)` and the `val_layout` is `(4, 4):(4, 1)`. The resulting tiler and TV layout are:
 > 
 > ```text
+>
 > tiler_mn = (16, 128) per thread block
 > tv_layout = ((32,4),(4,4)):((64,4),(16,1))
 > ```
@@ -205,7 +218,7 @@ Now we can introduce what *division* is. The term "division" here is misleading,
 
 ![Logical Division (contd.)](/images/posts/cutedsl-notes/logical-divide-2.png)
 
-Logical divisions successfully reorganize and regroup the original blocks. However, if we want to pick out one specific block, we still need to traverse and slice the 2D matrix both in the row and column directions, which is not convenient. This is where the **zipped division** comes in: it *zips* the blocks within each group together and arranges them in a 1D array. After zipped division, if we want to pick out the $n$-th block, we can simply access the $n$-th column of the zipped division tensor, as shown in the picture below.
+Logical divisions successfully reorganize and regroup the original blocks. However, if we want to pick out one specific block, we still need to traverse and slice the 2D matrix both in the row and column directions, which is not convenient. This is where the **zipped division** comes in: it *zips* the blocks within each group together and arranges them in a 1D array. After zipped division, if we want to pick out the $$n$$-th block, we can simply access the $$n$$-th column of the zipped division tensor, as shown in the picture below.
 
 ![Zipped Division](/images/posts/cutedsl-notes/zipped-divide.png)
 
@@ -214,6 +227,7 @@ Logical divisions successfully reorganize and regroup the original blocks. Howev
 Given the knowledge of `zipped_divide`, we can now understand the code snippet in `elementwise_add.py`. 
 
 ```python
+
 gA = cute.zipped_divide(mA, tiler_mn)  # ((TileM,TileN),(RestM,RestN))
 gB = cute.zipped_divide(mB, tiler_mn)  # ((TileM,TileN),(RestM,RestN))
 gC = cute.zipped_divide(mC, tiler_mn)  # ((TileM,TileN),(RestM,RestN))
@@ -238,6 +252,7 @@ The kernel is launched with the following arguments:
 **1. slice the tensors given block id**
 
 ```python
+
 bidx, _, _ = cute.arch.block_idx() # block id
 
 # slice for CTAs

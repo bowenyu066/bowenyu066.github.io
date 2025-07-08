@@ -42,6 +42,12 @@ def insert_empty_line_in_codeblock(content):
                 if lines[i + 1].strip() != '': # Not an empty line
                     new_lines.append('')
             in_code_block = not in_code_block
+        elif line.startswith('> ```'):
+            if not in_code_block:
+                # Start of a code block
+                if lines[i + 1].strip() != '>': # Not an empty line
+                    new_lines.append('>')
+            in_code_block = not in_code_block
     return '\n'.join(new_lines)
 
 def process_markdown(md_path):
@@ -57,7 +63,7 @@ def process_markdown(md_path):
     # print(f"Processed markdown: {md_path}")\
 
 def main():
-    parser = argparse.ArgumentParser(description="Encrypt a Jekyll post with staticrypt")
+    parser = argparse.ArgumentParser(description="Process a markdown file and move it to the _posts directory")
     parser.add_argument('md_file', help="Markdown filename in the local directory (e.g., my-post.md)")
     args = parser.parse_args()
 
@@ -70,6 +76,14 @@ def main():
     file_name = os.path.basename(src_md)
     file_name_date = time.strftime('%Y-%m-%d-', time.localtime()) + file_name # Prepend date to filename
     dest_md = os.path.join(POSTS_DIR, file_name_date)
+    # Remove all possible original files (including those with different date prefixes)
+    for f in os.listdir(POSTS_DIR):
+        if f.endswith(file_name) and len(f) == len('YYYY-MM-DD-') + len(file_name):
+            # Match files with exact pattern: YYYY-MM-DD-{file_name}
+            prefix = f[:10]  # First 10 characters: YYYY-MM-DD
+            if len(prefix) == 10 and prefix[4] == '-' and prefix[7] == '-' and prefix[:4].isdigit() and prefix[5:7].isdigit() and prefix[8:10].isdigit():
+                os.remove(os.path.join(POSTS_DIR, f))
+                print(f"Removed old file: {f}")
     shutil.copy2(src_md, dest_md)
     print(f"Moved {src_md} -> {dest_md}")
     
