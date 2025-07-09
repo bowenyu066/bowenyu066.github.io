@@ -13,6 +13,8 @@ categories:
     - Notes
 ---
 
+Last updated: 2025-07-09
+
 $$
 \begin{align*}
  &\color{red}\text{Note: Work in progress.} \\
@@ -30,7 +32,7 @@ Before CuTeDSL, CUDA programming was done in C++ with the CUTLASS library, which
 
 ## Overall Structure and Workflow
 
-A typical CuTeDSL program consists of three parts: **a main function, a host function, and a kernel function**.
+A typical CuTeDSL program consists of three parts: **a main function, a host function, and a kernel function**. Below is an example script of such a program.
 
 ```python
 import cutlass
@@ -57,6 +59,8 @@ def main():
     # 3. Execute the host function
     compiled_func(...)
 ```
+
+Although the above code is a most simplified version, it illustrates the essential structure of a CuTeDSL program. The key components are:
 
 - **The main function** runs on the CPU and is responsible for data preparation, program compilation, and execution orchestration
 - **The host function** (decorated with `@cute.jit`) runs on the CPU and handles tensor layout setup, memory management, and kernel launching

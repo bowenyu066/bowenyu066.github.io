@@ -14,6 +14,8 @@ categories:
 
 # 1. `&` and `&&`, lvalue, rvalue and xvalue, `std::move`
 
+Look at the following code snippet:
+
 ```cpp
 
 // The following use case comes from:
@@ -29,9 +31,11 @@ return thr_tensor(thr_idx_, _, repeat<rank_v<STensor>>(_));
 }
 ```
 
-`&&` stands for **rvalue reference**.
+There are a bunch of "strange" syntaxes that you would never see in plain C, or you've been using C++ only as "C with classes" or "C with STL". We'll break them down one by one, but first, let's understand the meaning of `&` and `&&` in C++.
 
 > **Notes in advance:** This section is pretty non-exhaustive and not that rigorous; if you want to see the exact definitions and use cases of lvalues, rvalues, xvalues, prvalues, and glvalues, please refer to Section 3 [here](#3-more-on-lvalues-glvalues-rvalues-prvalues-and-xvalues). The examples below, however, should be good enough to illustrate the basic concepts.
+
+`&&` stands for **rvalue reference**. But what are lvalues and rvalues?
 
 - **Lvalues**: These are expressions that refer to a memory location, such as variables declared, array elements, or objects returned by reference from a function. They can be assigned a value.
 - **Rvalues**: These are temporary, intermediate values. Examples include literals (like `42` or `3.14`), the result of arithmetic operations (like `x + y`), or objects returned by value from a function. They cannot be assigned a value.
@@ -135,13 +139,15 @@ After move:
   source: ""
 ```
 
-Now, it may seem confusing about why we use `std::string destination = std::move(source);` instead of `std::string&& destination = std::move(source);`. These are two fundamentally different things. To explain it, we would need to understand **constructing and assigning** objects in C++. We'll explain that in the next section.
+Ta-da! By "moving" the string from `source` and "assigning" it to `destination`, we directly transferred the ownership of the string's internal data from `source` to `destination`. `source` is still there, but it is now in a "valid but unspecified" state, meaning it can still be used, but its contents are no longer valid or meaningful.
+
+Some people may be confused about why we use `std::string destination = std::move(source);` instead of `std::string&& destination = std::move(source);`. (You told me `std::move` returns an rvalue reference!) It's pretty easy to get bewildered here, especially if you are coming from a C background. The key point is that `std::move(source)` indeed returns an rvalue reference, but we are *NOT declaring a new variable here*. What we want to do is to construct a new string object `destination` that takes ownership of the resources from `source`. So how come it can be done simply with an `=` operator, which we usually recognize as a naive "declaration" or "assignment" (like `int x = 42;` or `x = x / 2`)? To explain it, we would need to understand **constructing and assigning** objects in C++, which are explained in the next section.
 
 # 2. Object Construction, Assignments, and Destruction
 
 ## Constructing Objects
 
-There are more ways to construct an object in C++ than you might think. Let's start with a simple `Widget` class that we pre-define:
+There are more ways to construct an object in C++ than you might think. Let's start with a simple `Widget` class [^1]:
 
 ```cpp
 
@@ -177,7 +183,14 @@ struct Widget {
 };
 ```
 
-As you can see, we have defined four different constructors for the `Widget` class:
+As you can see, we have defined four functions -- all of which are named `Widget`, the same name as the class -- and a `~Widget` function, taking no parameters. These functions are not just regular functions when you give them the same name as the class: they are **constructors** (`Widget`) and a **destructor** (`~Widget`).
+
+- Constructors are called when you *create* an object of the class;
+- Destructors are called when the object is *destroyed* (e.g., goes out of scope or is explicitly deleted).
+
+Also, you may notice there are more than one constructors, but they are distinguished by their different parameter lists. This is made possible by a feature called **function overloading** in C++, which we explain in full detail in [Section 4](#4-functions-functors-and-lambda-expressions). For now, the only thing you need to know is that C++ will choose the correct constructor based on the arguments we pass when creating an object. This also means that we can construct an object with multiple ways.
+
+The four different constructors for the `Widget` class are called **default constructor**, **parameterized constructor**, **copy constructor**, and **move constructor**. Let's go through each of them:
 
 - **Default Constructor**: This is called when you create an object without any parameters. It initializes the object with default values. The syntax for a general default constructor is:
 
@@ -212,7 +225,7 @@ To create an rvalue (temporary) object, simply use `Widget();` would do. Rvalue 
 > Widget w1();
 > ```
 >
-> This is the so-called **most vexing parse** problem in C++. The above line is actually interpreted as a function declaration, not an object construction. It declares a function named `w1` that takes no parameters and returns a `Widget`. To avoid the confusion, use the list initialization syntax (introduced at the end of this section) instead: `Widget w1{};`.
+> This is the so-called **most vexing parse** problem in C++. The above line is actually interpreted as a function declaration, not an object construction. It declares a function named `w1` that takes no parameters and returns a `Widget`. To avoid the confusion, use the list initialization syntax (introduced at the end of this section) instead, or simply add nothing: `Widget w1{};` or `Widget w1;`.
 
 - **Parameterized Constructor**: This constructor takes parameters to initialize the object with specific values. The syntax is similar to the default constructor, but it includes parameters:
 
@@ -230,7 +243,7 @@ Widget w2(42, "MyWidget"); // Calls the parameterized constructor with id=42 and
 
 Again, you can also create an rvalue object by using `Widget(42, "MyWidget");`. 
 
-So far so good, *easy twisky*. But sometimes, we want to create a new object based on an existing one. This is where the next two constructors come in:
+So far so good, *easy twisky*. But sometimes, we want to create a new object based on an existing one (the case seen in [Section 1](#1--and--lvalue-rvalue-and-xvalue-stdmove)). This is where the next two constructors come in:
 
 - **Copy Constructor**: This constructor is called when you create a new object as a copy of an existing object. It takes a reference to the existing object as a parameter. The syntax is:
 
@@ -246,6 +259,8 @@ You can call it like this:
 Widget w3 = w2; // Calls the copy constructor, creating a new Widget with the same values as w2
 Widget w4 = Widget(); // Calls the default constructor, then the copy constructor to create w4 as a copy of the default Widget
 ```
+
+The `=` sign in `Widget w3 = w2;` is not just a simple assignment; it actually invokes the copy constructor to create a new object `w3` that is a copy of `w2`.
 
 Note that the copy constructor **must take a `const` reference to the existing object**. This is due to the reason we mentioned in section 1: an lvalue reference (`&`) can only bind to an lvalue, but a `const` lvalue reference can bind to both lvalues and rvalues. This allows the use case in `Widget w4 = Widget();`, where `Widget()` is an rvalue that can be bound to a `const` lvalue reference.
 
@@ -295,7 +310,7 @@ Widget w4{std::move(w2)}; // Calls the move constructor, transferring resources 
 
 ## Assigning Objects
 
-Constructing and assigning objects are two different things. When you construct an object, you create **a new instance of the class**. When you assign an object, you copy or move the values from one object to **another existing object**. Let's take a second look at our `Widget` class, but this time, we add two additional functions: `Widget& operator=(const Widget& other)` and `Widget& operator=(Widget&& other) noexcept`.
+Constructing and assigning objects are two different things. When you construct an object, you create **a new instance of the class**. When you assign an object, you copy or move the values from one object to **another existing object**. Let's take a second look at our `Widget` class, but this time, we add two additional functions: `Widget& operator=(const Widget& other)` and `Widget& operator=(Widget&& other) noexcept`. (For those of you who are not familiar with the syntax, `operator=` is also a special function in C++ that allows you to define how the assignment operator (`=`) works for your class. Almost all the operators in C++ can be overloaded, such as `+`, `-`, `*`, `/`, `==`, `!=`, `<<`, `>>`, etc. We may cover them in a future section.)
 
 ```cpp
 
@@ -430,7 +445,7 @@ Summarizing the above, we can conclude the so-called **Rule of the Big Five**. I
 
 ## Answer to the Question in Section 1: Difference between `std::string destination = std::move(source);` and `std::string&& destination = std::move(source);`
 
-After getting through all these, we can finally answer the question in section 1.
+After getting through all these, we can finally answer the question at the end of [Section 1](#2-object-construction-assignments-and-destruction).
 
 It becomes clear that `std::string destination = std::move(source);` is a **construction** of a new `std::string` object named `destination`, which is initialized by moving the contents of `source`. This means that `destination` will have its own copy of the data, and `source` will be left in a valid but unspecified state.
 
@@ -439,6 +454,8 @@ But what is `std::string&& destination = std::move(source);`? This is a **declar
 Now, it might be confusing to think that something that has a name, like `destination` or `source`, is an rvalue reference. C++ has a critical rule here: a **named rvalue reference** (like `destination` here) is treated as an **lvalue** in subsequent code, so using `destination` later (in construction or assignment) **won't trigger move semantics automatically**. Think of it this way: something that has a name can be referred to over and over again throughout the code, so if the compiler really treats it as an rvalue and moves from it every time we use the name, it would be a disaster. Therefore, to enforce safety, C++ requires that you explicitly use `std::move(destination)` to indicate that you want to treat `destination` as an rvalue and trigger move semantics, even though `destination` is an rvalue reference. In practice, one would almost never use `std::string&& destination = std::move(source);` explicitly. The named rvalue reference is more commonly used for  **function overload resolution**; by providing two versions of a function—one that takes an lvalue reference (`&`) and one that takes an rvalue reference (`&&`), you let the compiler automatically choose the correct and most efficient path based on the argument you provide. But after getting inside the function, the rvalue reference is treated as an lvalue, so you still need to use `std::move()` to trigger move semantics.
 
 # 3. More on Lvalues, Glvalues, Rvalues, Prvalues and Xvalues
+
+This section is kind of bookish and perhaps a bit too technical, but it provides a strict definition of the basic concepts -- lvalues, rvalues, etc. -- that we introduced in [Section 1](#1--and--lvalue-rvalue-and-xvalue-stdmove). You can safely skip this section if you are not interested in the details.
 
 Historially, **lvalues** and **rvalues** go by their names because of the way they are used in expressions: lvalues appear on the left side, rvalues on the right side. For example, in the expression `int x = 42;`, `x` is an lvalue and `42` is an rvalue. This is not always the case, however, and does not count as the rigorous definition of lvalues and rvalues.
 
@@ -549,6 +566,8 @@ int main() {
 }
 ```
 
+If you are not familiar with templates, read [Section 5](#5-type-deduction-auto-decltype-and-templates).
+
 *3. Member Access on an xvalue is an xvalue:*
 
 ```cpp
@@ -644,6 +663,192 @@ int main() {
     print(3.14);    // Calls the double version
 }
 ```
+
+*<NOT COMPLETED! To be continued...>*
+
+# 5. Type Deduction, `auto`, `decltype`, and Templates
+
+Go back to the script in [Section 1](#1--and--lvalue-rvalue-and-xvalue-stdmove). 
+
+```cpp
+// The following script comes from:
+// https://github.com/NVIDIA/cutlass/blob/main/include/cute/atom/copy_atom.hpp#L398
+template <class STensor>
+CUTE_HOST_DEVICE
+auto
+partition_S(STensor&& stensor) const {
+//static_assert(sizeof(typename remove_cvref_t<STensor>::value_type) == sizeof(typename TiledCopy::ValType),
+//              "Expected ValType for tiling SrcTensor.");
+auto thr_tensor = make_tensor(static_cast<STensor&&>(stensor).data(), TiledCopy::tidfrg_S(stensor.layout()));
+return thr_tensor(thr_idx_, _, repeat<rank_v<STensor>>(_));
+}
+```
+
+Yes, we have seen what is `&&` in `STensor&& stensor`: *indicating an rvalue reference*, you should say. With this in mind, let's look at a real use case of such `partition_S` function. Note in advance that `partition_S` is a member function of the class `ThrCopy`[^2].
+
+```cpp
+// The following script is adapted from:
+// https://github.com/NVIDIA/cutlass/blob/a1aaf2300a8fc3a8106a05436e1a2abad0930443/include/cutlass/gemm/collective/sm70_mma_twostage.hpp#L192
+template <class Tensor>
+CUTLASS_DEVICE void
+operator() (Tensor g, int thread_idx)
+{
+    using namespace cute;
+
+    ThrCopy gmem_tiled_copy;
+    auto copy_thr = gmem_tiled_copy.get_slice(thread_idx);
+
+    Tensor tg = copy_thr.partition_S(g);
+    // ... other parts omitted ...
+}
+```
+
+In this example, `partition_S` takes the parameter `g` as the input. However, `g` is a class `Tensor` object, and is inevitably an lvalue. So how can we pass it to `partition_S`, which requires an rvalue reference? Is this script wrong?
+
+Short answer: NO. The function signature `template <class STensor> auto partition_S(STensor&& stensor)` uses what is known as a **forwarding reference** (or universal reference), ***not a strict rvalue reference***, and this concept is tied closely to another feature named **type deduction** in C++, which we will examine in this section.
+
+## Templates
+
+**Templates** are one of the most fascinating features of C++, and we have already seen a glimpse of them through many examples in this note. They are actually super intuitive: when you define a template, you are essentially creating a whole bundle of functions/classes that are inherently the same, but associated with different types.
+
+For instance, suppose we want to create a function that adds three numbers together. In Python, we can simply write:
+
+```python
+def add3(a, b, c):
+    return a + b + c
+```
+
+It works for any type of `a`, `b`, and `c` as long as they support the `+` operator. However, this is not allowed in C++, for C++ is a statically typed language, meaning that the types of variables must be known at compile time. Sadly, we have to write different functions for each possible type (`double`, `int`, `float`, etc.):
+
+```cpp
+int add3(int a, int b, int c) {
+    return a + b + c;
+}
+
+double add3(double a, double b, double c) {
+    return a + b + c;
+}
+
+float add3(float a, float b, float c) {
+    return a + b + c;
+}
+```
+
+These functions are actually the same. The only difference is their parameter types. So why not just write a single function that can accept any type? This is where **templates** come in. We can define a template function like this:
+
+```cpp
+template <typename T> // or equivalently, template <class T>
+T add3(T a, T b, T c) {
+    return a + b + c;
+}
+```
+
+`T` is a **template parameter** that will be deduced by the compiler based on the types of the arguments actually passed to the function. When you call the function, you can simply write:
+
+```cpp
+add3(1, 2, 3);        // Compiler deduces T = int
+add3(1.5, 2.7, 3.2);  // Compiler deduces T = double
+```
+
+The above examples are quite straightforward. However, you may start to wonder the edge cases -- and yes, there are cases where you might need to explicitly specify the template parameter. The general syntax for calling a template function is `function_name<template_parameter>(arguments)`: 
+
+```cpp
+add3<double>(1, 2, 3);     // Forces double arithmetic with int arguments
+add3<int>(1.1, 2.2, 3.3);  // Forces int arithmetic (truncates the doubles)
+
+// This would be an error because the compiler can't decide between int and double:
+// add3(1, 2.5, 3);  // Error! Mixed types
+add3<double>(1, 2.5, 3);   // OK - explicitly specify double to resolve ambiguity
+```
+
+Not limited to functions, templates can also be used to define classes. For example, we can define a simple `Pair` class that holds two values of the same type:
+
+```cpp
+template <typename T>
+class Pair {
+public:
+    T first;
+    T second;
+
+    Pair(T a, T b) : first(a), second(b) {}
+
+    void print() {
+        std::cout << "Pair(" << first << ", " << second << ")\n";
+    }
+};
+```
+
+We can then create pairs of different types:
+
+```cpp
+Pair intPair(1, 2); // C++17 and later
+Pair doublePair(1.5, 2.5);
+Pair<std::string> stringPair("Hello", "World");
+```
+
+> Note: Before C++17, all template parameters for template classes must be specified explicitly even if they can be deduced; for instance, `Pair<int> intPair(1, 2);` is required. Since C++17, thanks to **class template argument deduction (CTAD)**, we can omit the template parameters when creating an object of a template class, as long as the compiler can deduce them from the constructor arguments.
+
+Sometimes, we may want to define a generic function/class that works mostly the same for all types, but with some special behavior for certain types. C++ provides a way to do this using **template specialization**. For example, to compare two values of the same type, we can define a generic `compare` function while providing a specialized version for C-style `const char*` strings:
+
+```cpp
+#include <cstring>
+
+template <typename T>
+bool is_equal(T a, T b) {
+    return a == b; // Generic comparison
+}
+
+template <>
+bool is_equal(const char* a, const char* b) {
+    return std::strcmp(a, b) == 0; // Specialized comparison for C-style strings
+}
+```
+
+The syntax `template <>` indicates that we are providing a specialization for the template function. Compiler will first try to match the specialized version, before falling back to the generic version if no match is found.
+
+## Type Deduction
+
+Undoubtedly, deducing the type of a template parameter is crucial for the functionality of templates. The general rules that govern type deduction in C++ are as follows:
+
+- **Parameters passed by value**: The compiler ignores any `const`, `volatile`, or references. It essentially copies the argument.
+
+```cpp
+template <typename T>
+void func(T arg);
+
+const int x = 42;
+const int& rx = x;
+
+func(x);   // T deduced as int
+func(rx);  // T deduced as int
+```
+
+In the example above, both `x` and `rx` are deduced as `int` in `func`; the `const` is ignored.
+
+> Note: originally, `x` is of type `const int`, but `rx` is of type `const int&`. Pointer cases are a bit more complicated: only the highest level `const` or `volatile` is ignored, while the rest is preserved.
+>
+> ```cpp
+> template <typename T>
+> void func(T arg);
+>
+> const int x = 42;
+> const int* px1 = &x;
+> int const* px2 = &x;
+> int* const px3 = &x;
+> const int* const px4 = &x;
+>
+> func(px1); // T deduced as const int*
+> func(px2); // T deduced as const int*
+> func(px3); // T deduced as int*
+> func(px4); // T deduced as const int*
+> ```
+>
+> For those of you who aren't familiar with `const`, `const int` is the same as `int const`; `const int*` represents a pointer to a `const int`, while `int* const` represents a `const` pointer to an `int`, and they are different. `const int* const`, as you may have guessed, is a `const` pointer to a `const int`. The first `const` applies to the type pointed to, while the second `const` applies to the pointer itself. 
+
+- **Parameters passed by reference or pointers**: The compiler deduces the type exactly as it is, including `const`, `volatile`
+
+[^1]: Both classes and structs are referred to as **classes** in this note. The only difference between them is that structs have public members by default, while classes have private members by default.
+[^2]: Simplified; the actual `ThrCopy` class is a more complicated template class. Here we simply aim to demonstrate the use of `partition_S` function.
 
 <script src="https://giscus.app/client.js"
         data-repo="bowenyu066/bowenyu066.github.io"
