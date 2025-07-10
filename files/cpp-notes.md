@@ -222,6 +222,7 @@ To create an rvalue (temporary) object, simply use `Widget();` would do. Rvalue 
 > **Note**: You *CANNOT* use the following way to call the default constructor, even though it looks like it should work by passing no parameters in the parentheses:
 > 
 > ```cpp
+>
 > Widget w1();
 > ```
 >
@@ -582,10 +583,18 @@ int x_coord = std::move(p).x; // `std::move(p)` is an xvalue of type Point.
 
 - an **rvalue** is a prvalue or an xvalue.
 
-With the defitions above, we can now rigourously define what `&` and `&&` mean in C++:
+With the defitions above, we can now define what `&` and `&&` mean in C++:
 
-- `&` denotes an **lvalue reference**. It can bind to lvalues and const lvalues, but not to prvalues or xvalues.
-- `&&` denotes an **rvalue reference**. It can bind to prvalues and xvalues, but not to lvalues.
+- `&` denotes an **lvalue reference**. An lvalue reference can bind to lvalues, but not to prvalues or xvalues.
+- `&&` denotes an **rvalue reference**. An rvalue reference can bind to prvalues and xvalues, but not to lvalues.
+
+> (1) What does it mean to "bind" to a value? In C++, **binding** simply means **creating a reference to an object or value**. It is exactly the process when you declare `int& x = 42;` or `int&& y = std::move(x);`: you are binding the name `x` or `y` to the value `42` or the rvalue reference returned by `std::move(x)`. Binding a reference to an object does not mean that the reference itself belongs to the same value category as the object. Expression `x` and `y` are both lvalues, even though `x` is an lvalue reference and `y` is an rvalue reference. [^3]
+>
+> (2) C++ has some additional rules for the `const` qualifier.
+> - A non-const lvalue reference can only bind to non-const lvalues.
+> - A const lvalue reference can bind to **all** value categories, including const and non-const lvalues, prvalues, and xvalues. This is the most flexible type of reference, because it promises not to modify the object it refers to. The lifetime of the temporary object created by binding a rvalue to a const lvalue reference is extended to the lifetime of the reference. [^4]
+> - A non-const rvalue reference can only bind to non-const prvalues and xvalues.
+> - A const rvalue reference can bind to both const and non-const prvalues and xvalues, but not to lvalues.
 
 Here's an overall example that summarizes the above concepts:
 
@@ -648,6 +657,7 @@ To begin with, I'd like to sincerely apologize for possible occurrences of my mi
 In Python, a function can be repeatedly defined with the same name, but every time we redefine the function with the same name, it will immediately point to the newer version (namely, overwrite the older definitions). In C++, however, you can have multiple functions with the same name as long as they have different parameter lists, and the compiler automatically chooses the correct function to call based on the arguments you provide. This is called **function overloading**.
 
 ```cpp
+
 #include <iostream>
 
 void print(int i) {
@@ -671,6 +681,7 @@ int main() {
 Go back to the script in [Section 1](#1--and--lvalue-rvalue-and-xvalue-stdmove). 
 
 ```cpp
+
 // The following script comes from:
 // https://github.com/NVIDIA/cutlass/blob/main/include/cute/atom/copy_atom.hpp#L398
 template <class STensor>
@@ -687,6 +698,7 @@ return thr_tensor(thr_idx_, _, repeat<rank_v<STensor>>(_));
 Yes, we have seen what is `&&` in `STensor&& stensor`: *indicating an rvalue reference*, you should say. With this in mind, let's look at a real use case of such `partition_S` function. Note in advance that `partition_S` is a member function of the class `ThrCopy`[^2].
 
 ```cpp
+
 // The following script is adapted from:
 // https://github.com/NVIDIA/cutlass/blob/a1aaf2300a8fc3a8106a05436e1a2abad0930443/include/cutlass/gemm/collective/sm70_mma_twostage.hpp#L192
 template <class Tensor>
@@ -714,6 +726,7 @@ Short answer: NO. The function signature `template <class STensor> auto partitio
 For instance, suppose we want to create a function that adds three numbers together. In Python, we can simply write:
 
 ```python
+
 def add3(a, b, c):
     return a + b + c
 ```
@@ -721,6 +734,7 @@ def add3(a, b, c):
 It works for any type of `a`, `b`, and `c` as long as they support the `+` operator. However, this is not allowed in C++, for C++ is a statically typed language, meaning that the types of variables must be known at compile time. Sadly, we have to write different functions for each possible type (`double`, `int`, `float`, etc.):
 
 ```cpp
+
 int add3(int a, int b, int c) {
     return a + b + c;
 }
@@ -737,6 +751,7 @@ float add3(float a, float b, float c) {
 These functions are actually the same. The only difference is their parameter types. So why not just write a single function that can accept any type? This is where **templates** come in. We can define a template function like this:
 
 ```cpp
+
 template <typename T> // or equivalently, template <class T>
 T add3(T a, T b, T c) {
     return a + b + c;
@@ -746,6 +761,7 @@ T add3(T a, T b, T c) {
 `T` is a **template parameter** that will be deduced by the compiler based on the types of the arguments actually passed to the function. When you call the function, you can simply write:
 
 ```cpp
+
 add3(1, 2, 3);        // Compiler deduces T = int
 add3(1.5, 2.7, 3.2);  // Compiler deduces T = double
 ```
@@ -753,6 +769,7 @@ add3(1.5, 2.7, 3.2);  // Compiler deduces T = double
 The above examples are quite straightforward. However, you may start to wonder the edge cases -- and yes, there are cases where you might need to explicitly specify the template parameter. The general syntax for calling a template function is `function_name<template_parameter>(arguments)`: 
 
 ```cpp
+
 add3<double>(1, 2, 3);     // Forces double arithmetic with int arguments
 add3<int>(1.1, 2.2, 3.3);  // Forces int arithmetic (truncates the doubles)
 
@@ -764,6 +781,7 @@ add3<double>(1, 2.5, 3);   // OK - explicitly specify double to resolve ambiguit
 Not limited to functions, templates can also be used to define classes. For example, we can define a simple `Pair` class that holds two values of the same type:
 
 ```cpp
+
 template <typename T>
 class Pair {
 public:
@@ -781,6 +799,7 @@ public:
 We can then create pairs of different types:
 
 ```cpp
+
 Pair intPair(1, 2); // C++17 and later
 Pair doublePair(1.5, 2.5);
 Pair<std::string> stringPair("Hello", "World");
@@ -791,6 +810,7 @@ Pair<std::string> stringPair("Hello", "World");
 Sometimes, we may want to define a generic function/class that works mostly the same for all types, but with some special behavior for certain types. C++ provides a way to do this using **template specialization**. For example, to compare two values of the same type, we can define a generic `compare` function while providing a specialized version for C-style `const char*` strings:
 
 ```cpp
+
 #include <cstring>
 
 template <typename T>
@@ -810,14 +830,15 @@ The syntax `template <>` indicates that we are providing a specialization for th
 
 Undoubtedly, deducing the type of a template parameter is crucial for the functionality of templates. The general rules that govern type deduction in C++ are as follows:
 
-- **Parameters passed by value**: The compiler ignores any `const`, `volatile`, or references. It essentially copies the argument.
+- **Parameters passed by value** (`func(T arg)`): The compiler ignores any `const`, `volatile`, or references. It essentially copies the argument.
 
 ```cpp
+
 template <typename T>
 void func(T arg);
 
-const int x = 42;
-const int& rx = x;
+const int x = 42; // x is of type const int
+const int& rx = x; // rx is of type const int&
 
 func(x);   // T deduced as int
 func(rx);  // T deduced as int
@@ -825,9 +846,10 @@ func(rx);  // T deduced as int
 
 In the example above, both `x` and `rx` are deduced as `int` in `func`; the `const` is ignored.
 
-> Note: originally, `x` is of type `const int`, but `rx` is of type `const int&`. Pointer cases are a bit more complicated: only the highest level `const` or `volatile` is ignored, while the rest is preserved.
+> Note: Pointer cases are a bit more complicated: only the highest level `const` or `volatile` (the cv-qualifiers of the pointer itself) is ignored. 
 >
 > ```cpp
+>
 > template <typename T>
 > void func(T arg);
 >
@@ -845,10 +867,36 @@ In the example above, both `x` and `rx` are deduced as `int` in `func`; the `con
 >
 > For those of you who aren't familiar with `const`, `const int` is the same as `int const`; `const int*` represents a pointer to a `const int`, while `int* const` represents a `const` pointer to an `int`, and they are different. `const int* const`, as you may have guessed, is a `const` pointer to a `const int`. The first `const` applies to the type pointed to, while the second `const` applies to the pointer itself. 
 
-- **Parameters passed by reference or pointers**: The compiler deduces the type exactly as it is, including `const`, `volatile`
+- **Parameters passed by lvalue references or pointers** (`func(T& arg)` or `func(T* arg)`): The compiler keeps the cv-qualifiers but omits the reference, pointer, or the cv-qualifiers of the pointer itself. This can be understood as the compiler tries to find a proper type `T`, such that `T&` or `T*` can bind to the argument type. For instance, if you pass a `const int&` or `const int*` to a function that takes `T&` or `T*`, the compiler deduces `T` as `const int`. If you simply pass an `int`, the compiler deduces `T` as `int`, since `int&` can bind to an `int`.
+
+```cpp
+template <typename T>
+void func(T& arg);
+
+template <typename T>
+void func(T* arg);
+
+const int x = 42; // x is of type const int
+const int& rx = x; // rx is of type const int&
+const int* const px = &x; // px is of type const int* const
+int* p = const_cast<int*>(&x); // p is of type int*
+int& r = const_cast<int&>(rx); // r is of type int&
+
+func(x);   // T deduced as const int
+func(rx);  // T deduced as const int
+func(px);  // T deduced as const int
+func(p);   // T deduced as int
+func(r);   // T deduced as int
+```
+
+- **Parameters passed by rvalue references** (`func(T&& arg)`): This is a special case of type deduction known as **forwarding references** (or **universal references**). It can also accept **all** possible value categories, just like `const T&`, and it only applies to template functions. 
+
+![Reference Types](/images/posts/cpp-notes/reference-type.png)
 
 [^1]: Both classes and structs are referred to as **classes** in this note. The only difference between them is that structs have public members by default, while classes have private members by default.
 [^2]: Simplified; the actual `ThrCopy` class is a more complicated template class. Here we simply aim to demonstrate the use of `partition_S` function.
+[^3]: I know this section is ordered in a bad way. It would probably be better if I could clarify these concepts at the very beginning. Maybe I will revise the entire section in the future.
+[^4]: Historically, lvalue references were introduced in C++98 before rvalue references (C++11). Often time we prefer defining a function that takes lvalue references as its arguments, instead of by values or pointers, because it could save us from unnecessary copies while treating the argument as the original object. For instance, we could define a function `int processWidget(Widget& w)` that processes the data of a `Widget` object without copying it. However, this function only accepted lvalues, meaning we couldn't pass a temporary object (an rvalue) to it, such as `processWidget(Widget())`. This would be a big headache, so Bjarne Stroustrup brought up the idea of allowing `const` lvalue references to bind to all possible values, including rvalues. The logic was if a reference promises not to modify the object (`const`), then it should be perfectly safe to bind it to a temporary object. There's no danger in modifying a temporary if you've promised not to modify it in the first place. Now, we can define the function as `int processWidget(const Widget& w)` and we're all set. After C++11, we can directly bind rvalues to rvalue references, but the old `const` lvalue reference still exists and is widely used in C++ codebases. (I just realized that such explanation overlaps with what we've introduced in Section 2. I'll reorganize the content someday to avoid redundancy. SORRYY!) 
 
 <script src="https://giscus.app/client.js"
         data-repo="bowenyu066/bowenyu066.github.io"
