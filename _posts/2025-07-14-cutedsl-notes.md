@@ -333,7 +333,7 @@ Straightforward operations are mostly direct extraction or combination of the nu
 
 We can take `cute.get_shape(layout)` as an example to see its translation to llvm IR. The original code is:
 
-```mlir
+```cpp
 
 // !memref_gmem_f32_2 = !cute.memref<f32, gmem, "((1,(4,4)),1,1):((0,(1,?)),0,0)">
 %lay_19 = cute.get_layout(%arg2) : !memref_gmem_f32_2
@@ -342,7 +342,7 @@ We can take `cute.get_shape(layout)` as an example to see its translation to llv
 
 After the first `ConvertToLLVMPass (convert-to-llvm)`, it is lowered to:
 
-```mlir
+```cpp
 
 // Layout %lay_19
 %124 = llvm.extractvalue %arg2[0] : !llvm.struct<(ptr<1>, struct<(struct<(i32, i32)>, i32)>)> 
@@ -357,23 +357,27 @@ Not-so-straightforward operations are those that require step-by-step lowering p
 
 - `cute.slice(tensor, coord)`, of type `!memref_gmem_f32_1 = !cute.memref<f32, gmem, "(16,128):(?,1)">`: get the sliced tensor (thread block sub-tensor) given the original tensor and the coordinate. The sliced tensor was then passed to `cute.tiled.copy.partition_S` to get the thread sub-tensor.
   - very beginning:
-    ```mlir
+    ```cpp
+
     %slice = cute.slice(%arg0, %coord) : !memref_gmem_f32_, !cute.coord<"((_,_),?)">
     ```
   - lowering step 1 (`CuteExpandOps (cute-expand-ops)`): solely extract the layout of the tensor, while leaving the pointer part to
-    ```mlir
+    ```cpp
+
     %lay_57 = cute.get_layout(%arg0) : !memref_gmem_f32_
     %slice = cute.slice(%lay_57, %coord) : !cute.layout<"((16,128),(?,?)):((?,1),(?{div=16},128))">, !cute.coord<"((_,_),?)">
     ```
     instead of directly passed to `partition_S`, `%slice` is passed to `%view = cute.make_view(%ptr, %slice)` to create the thread block sub-tensor; this `%view` plays the role of the original `%slice`
-    ```mlir
+    ```cpp
+
     %idx = cute.crd2idx(%coord, %lay_57) : (!cute.coord<"((_,_),?)">, !cute.layout<"((16,128),(?,?)):((?,1),(?{div=16},128))">) -> !cute.int_tuple<"?{div=16}"> // offset
     %iter_58 = cute.get_iter(%arg0) : !memref_gmem_f32_
     %ptr = cute.add_offset(%iter_58, %idx) : (!cute.ptr<f32, gmem>, !cute.int_tuple<"?{div=16}">) -> !cute.ptr<f32, gmem>
     %view = cute.make_view(%ptr, %slice) : !memref_gmem_f32_1
     ```
   - lowering step 2 (`ConvertCuteAlgoToArch (convert-cute-algo-to-arch)`): no more intermediate `%slice` to create `%view`; rather, the layout of the sliced tensor is directly extracted from the original layout, and the pointer, together with the extracted layout, is passed to `cute.make_view(ptr, layout)`
-    ```mlir
+    ```cpp
+
     %lay_57 = cute.get_layout(%arg0) : !memref_gmem_f32_
     // since %coord is `((None, None), bid)`, we need to equivalently extract the layout of the first mode
     %31:4 = cute.get_scalars(%lay_57) <{only_dynamic}> : !cute.layout<"((16,128),(?,?)):((?,1),(?{div=16},128))">
@@ -389,7 +393,8 @@ Not-so-straightforward operations are those that require step-by-step lowering p
   - `cute.make_view(ptr, layout)` stays in the code until the first `ConvertToLLVMPass (convert-to-llvm)`
 - `cute.atom()`, `cute.make_tiled_copy(atom)`, `cute.tiled.copy.partition_S(tiled_copy, slice, tidx)`: get the partitioned thread sub-tensor given the sliced tensor and the thread id. These three operations should be seen as a whole, for they are lowered as a whole as well
   - very beginning:
-    ```mlir
+    ```cpp
+
     %24 = nvvm.read.ptx.sreg.tid.x : i32
     %atom = cute.atom() : !cute_nvgpu.atom.universal_copy<f32>
     %30 = cute.make_tiled_copy(%atom) : !copy_simt
@@ -397,7 +402,8 @@ Not-so-straightforward operations are those that require step-by-step lowering p
     %src_partitioned = cute.tiled.copy.partition_S(%30, %slice, %coord_74) : (!copy_simt, !memref_gmem_f32_1, !cute.coord<"?">) -> !memref_gmem_f32_2
     ```
   - lowering (`ConvertCuteAlgoToArch (convert-cute-algo-to-arch)`): note that during this step, the sliced thread block sub-tensor `%slice` is replaced by `%view` (of layout `(16,128):(?,1)`)
-    ```mlir
+    ```cpp
+    
     %24 = nvvm.read.ptx.sreg.tid.x : i32
     // preparation
     %iter_95 = cute.get_iter(%view) : !memref_gmem_f32_1
