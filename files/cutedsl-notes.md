@@ -82,6 +82,7 @@ The elementwise addition of two matrices is the most basic operation in linear a
 We use $A$ and $B$ to denote the input matrices (tensors), and $C$ to denote the output matrix (tensor).
 
 - **In the main function**, we prepare the input data $A$ and $B$ (usually from `torch.tensor`) and an empty output tensor $C$, and transform them into `cute.Tensor` objects. Apart from the info that `torch.tensor` provides, `cute.Tensor` also contains the layout information of the tensor. After that, we compile the kernel function and execute it. [^6]
+
 ```python
 def run_elementwise_add(
     M,
@@ -129,7 +130,9 @@ def run_elementwise_add(
     compiled_func(a_tensor, b_tensor, c_tensor)
     torch.testing.assert_close(a + b, c)
 ```
+
 - **In the host function**, we slice the tensors $A$, $B$ and $C$ into smaller tiles, with each tile to be handled by a thread block (CTA block), and rearrange the tensors by placing the elements within the same tile in the same column. Such operation is called the **zipped division**. This way, each thread block can easily access the elements it needs to process by extracting an entire column of the rearranged tensor. We also specify how the threads within a thread block and the values (accumulators, registers) within a thread are arranged; such layout is called the **thread-value layout** (TV layout). Finally, to avoid that the tensor size is not divisible by the tile size, we also create a coordinate tensor `cC` that will serve as a mask to indicate which elements of the output tensor $C$ are valid. Finally, we launch the kernel function with the specified grid and block sizes.
+
 ```python
 @cute.jit
 def elementwise_add(mA, mB, mC, copy_bits: cutlass.Constexpr = 128):
@@ -156,7 +159,9 @@ def elementwise_add(mA, mB, mC, copy_bits: cutlass.Constexpr = 128):
         block=[cute.size(tv_layout, mode=[0]), 1, 1],
     )
 ```
+
 - **In the kernel function**, we first fetch the data -- sliced tensors `thrA`, `thrB` and `thrC` -- that the current thread needs to process based on the current thread id (`tidx`) and block id (`bidx`). These data are currently stored in gmem; we then allocate fragments `frgA`, `frgB` and `frgC` in rmem, and load the data from gmem to rmem. The real computation (addition) is thereby performed in rmem, and the results are stored in `frgC`. Finally, we store the results back to gmem.
+
 ```python
 @cute.kernel
 def elementwise_add_kernel(
