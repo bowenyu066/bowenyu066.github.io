@@ -2,7 +2,7 @@
 title: Notes on CUTLASS DSL (CuTeDSL)
 date: 2025-7-6 22:07:12 +0800
 permalink: /posts/notes/cutedsl-notes
-excerpt: "Basic, introductory notes on CuTeDSL, a domain-specific language for CUDA programming, which allows users to write CUDA kernels in Python."
+excerpt: "Basic, introductory notes on CuTeDSL, a domain-specific language for CUDA programming that allows users to write CUDA kernels in Python conveniently."
 tags: 
     - Computer Science
     - CUDA
@@ -13,7 +13,7 @@ categories:
     - Notes
 ---
 
-Last updated: 2025-07-14
+Last updated: 2025-07-15
 
 $$
 \begin{align*}
@@ -83,13 +83,154 @@ The elementwise addition of two matrices is the most basic operation in linear a
 
 We use $$A$$ and $$B$$ to denote the input matrices (tensors), and $$C$$ to denote the output matrix (tensor).
 
-- **In the main function**, we prepare the input data $$A$$ and $$B$$ (usually from `torch.tensor`) and an empty output tensor $$C$$, and transform them into `cute.Tensor` objects. Apart from the info that `torch.tensor` provides, `cute.Tensor` also contains the layout information of the tensor.
-- **In the host function**, we slice the tensors $$A$$, $$B$$ and $$C$$ into smaller tiles, with each tile to be handled by a thread block (CTA block), and rearrange the tensors by placing the elements within the same tile in the same column. Such operation is called the **zipped division**. This way, each thread block can easily access the elements it needs to process by extracting an entire column of the rearranged tensor. We also specify how the threads within a thread block and the values (accumulators, registers) within a thread are arranged; such layout is called the **thread-value layout** (TV layout). Finally, to avoid that the tensor size is not divisible by the tile size, we also create a coordinate tensor `cC` that will serve as a mask to indicate which elements of the output tensor $$C$$ are valid.
+- **In the main function**, we prepare the input data $$A$$ and $$B$$ (usually from `torch.tensor`) and an empty output tensor $$C$$, and transform them into `cute.Tensor` objects. Apart from the info that `torch.tensor` provides, `cute.Tensor` also contains the layout information of the tensor. After that, we compile the kernel function and execute it. [^6]
+```python
+
+def run_elementwise_add(
+    M,
+    N,
+    dtype: Type[cutlass.Numeric],
+    is_a_dynamic_layout=False,
+    is_b_dynamic_layout=False,
+    is_result_dynamic_layout=False,
+):
+    """Main function to run the elementwise addition example."""
+    if not torch.cuda.is_available():
+        raise RuntimeError(f"Ampere GPU is required to run this example!")
+
+    # Prepare input tensors
+    torch_dtype = cutlass_torch.dtype(dtype)
+    if dtype.is_integer:
+        a = torch.randint(0, 10, (M, N), device=torch.device("cuda"), dtype=torch_dtype)
+        b = torch.randint(0, 10, (M, N), device=torch.device("cuda"), dtype=torch_dtype)
+    else:
+        a = torch.randn(M, N, device=torch.device("cuda"), dtype=torch_dtype)
+        b = torch.randn(M, N, device=torch.device("cuda"), dtype=torch_dtype)
+
+    c = torch.zeros_like(a)
+
+    # Transform tensors to cute.Tensor objects
+    if not is_a_dynamic_layout:
+        a_tensor = from_dlpack(a).mark_layout_dynamic()
+    else:
+        a_tensor = a
+
+    if not is_b_dynamic_layout:
+        b_tensor = from_dlpack(b).mark_layout_dynamic()
+    else:
+        b_tensor = b
+
+    if not is_result_dynamic_layout:
+        c_tensor = from_dlpack(c).mark_layout_dynamic()
+    else:
+        c_tensor = c
+ 
+    # Compile the kernel function
+    compiled_func = cute.compile(elementwise_add, a_tensor, b_tensor, c_tensor)
+
+    # Execute the kernel function
+    compiled_func(a_tensor, b_tensor, c_tensor)
+    torch.testing.assert_close(a + b, c)
+```
+- **In the host function**, we slice the tensors $$A$$, $$B$$ and $$C$$ into smaller tiles, with each tile to be handled by a thread block (CTA block), and rearrange the tensors by placing the elements within the same tile in the same column. Such operation is called the **zipped division**. This way, each thread block can easily access the elements it needs to process by extracting an entire column of the rearranged tensor. We also specify how the threads within a thread block and the values (accumulators, registers) within a thread are arranged; such layout is called the **thread-value layout** (TV layout). Finally, to avoid that the tensor size is not divisible by the tile size, we also create a coordinate tensor `cC` that will serve as a mask to indicate which elements of the output tensor $$C$$ are valid. Finally, we launch the kernel function with the specified grid and block sizes.
+```python
+
+@cute.jit
+def elementwise_add(mA, mB, mC, copy_bits: cutlass.Constexpr = 128):
+    """Host function to perform elementwise addition of two matrices."""
+    dtype = mA.element_type
+    vector_size = copy_bits // dtype.width # For dtype.width = 32, vector_size = 4
+
+    # Set up the TV layout and tiler
+    thr_layout = cute.make_ordered_layout((4, 32), order=(1, 0))
+    val_layout = cute.make_ordered_layout((4, vector_size), order=(1, 0))
+    tiler_mn, tv_layout = cute.make_layout_tv(thr_layout, val_layout)
+
+    # Rearrange the tensors using zipped division
+    gA = cute.zipped_divide(mA, tiler_mn)
+    gB = cute.zipped_divide(mB, tiler_mn)
+    gC = cute.zipped_divide(mC, tiler_mn)
+
+    idC = cute.make_identity_tensor(mC.shape)
+    cC = cute.zipped_divide(idC, tiler=tiler_mn)
+
+    # Launch the kernel function
+    elementwise_add_kernel(gA, gB, gC, cC, mC.shape, tv_layout, tiler_mn).launch(
+        grid=[cute.size(gC, mode=[1]), 1, 1],
+        block=[cute.size(tv_layout, mode=[0]), 1, 1],
+    )
+```
 - **In the kernel function**, we first fetch the data -- sliced tensors `thrA`, `thrB` and `thrC` -- that the current thread needs to process based on the current thread id (`tidx`) and block id (`bidx`). These data are currently stored in gmem; we then allocate fragments `frgA`, `frgB` and `frgC` in rmem, and load the data from gmem to rmem. The real computation (addition) is thereby performed in rmem, and the results are stored in `frgC`. Finally, we store the results back to gmem.
+```python
+
+@cute.kernel
+def elementwise_add_kernel(
+    gA: cute.Tensor,
+    gB: cute.Tensor,
+    gC: cute.Tensor,
+    cC: cute.Tensor,  # coordinate tensor
+    shape: cute.Shape,
+    tv_layout: cute.Layout,
+    tiler_mn: cute.Shape,
+):
+    """Kernel function to perform elementwise addition of two matrices."""
+    tidx, _, _ = cute.arch.thread_idx() # thread id
+    bidx, _, _ = cute.arch.block_idx() # block id
+
+    # Slice the tensors given block id for the current thread block
+    blk_coord = ((None, None), bidx)
+    blkA = gA[blk_coord]
+    blkB = gB[blk_coord]
+    blkC = gC[blk_coord]
+    blkCrd = cC[blk_coord]
+
+    # Slice the block sub-tensors given thread id for the current thread
+    copy_atom_load = cute.make_copy_atom(cute.nvgpu.CopyUniversalOp(), gA.element_type)
+    copy_atom_store = cute.make_copy_atom(cute.nvgpu.CopyUniversalOp(), gC.element_type)
+
+    tiled_copy_A = cute.make_tiled_copy(copy_atom_load, tv_layout, tiler_mn)
+    tiled_copy_B = cute.make_tiled_copy(copy_atom_load, tv_layout, tiler_mn)
+    tiled_copy_C = cute.make_tiled_copy(copy_atom_store, tv_layout, tiler_mn)
+
+    thr_copy_A = tiled_copy_A.get_slice(tidx)
+    thr_copy_B = tiled_copy_B.get_slice(tidx)
+    thr_copy_C = tiled_copy_C.get_slice(tidx)
+
+    thrA = thr_copy_A.partition_S(blkA)
+    thrB = thr_copy_B.partition_S(blkB)
+    thrC = thr_copy_C.partition_S(blkC)
+
+    # Allocate fragments for gmem->rmem
+    frgA = cute.make_fragment_like(thrA)
+    frgB = cute.make_fragment_like(thrB)
+    frgC = cute.make_fragment_like(thrC)
+
+    thrCrd = thr_copy_C.partition_S(blkCrd)
+    frgPred = cute.make_fragment(thrCrd.shape, cutlass.Boolean)
+
+    for i in cutlass.range_dynamic(0, cute.size(frgPred), 1):
+        # Check if the thread coordinate is within the bounds of the tensor shape
+        val = cute.elem_less(thrCrd[i], shape)
+        frgPred[i] = val
+
+    # Move data to reg address space
+    cute.copy(copy_atom_load, thrA, frgA, pred=frgPred)
+    cute.copy(copy_atom_load, thrB, frgB, pred=frgPred)
+
+    # Load data before use
+    # The compiler will optimize the copy and load operations to convert some memory ld/st into register uses
+    result = frgA.load() + frgB.load()
+
+    # Save the results back to registers
+    frgC.store(result)
+
+    # Copy the results back to c
+    cute.copy(copy_atom_store, frgC, thrC, pred=frgPred)
+```
 
 ## Details of Python Kernel Implementation
 
-Most parts of the kernel implementation follow the [above workflow](#overall-structure-and-workflow) and are straightforward. The following sections will focus on the details of TV layout, zipped division, and tensor slicing behind the scenes.
+We can see from the codes that most parts of the kernel implementation follow the [overall workflow](#overall-structure-and-workflow) and are thus straightforward. The following sections focus on the details of TV layout, zipped division, and tensor slicing behind the scenes.
 
 ### TV Layout
 
@@ -174,9 +315,7 @@ using TVLayout = Layout<Shape <Shape <_2,  _2, _2>, Shape <_2, _2,  _2>>,
                         Stride<Stride<_1, _16, _4>, Stride<_8, _2, _32>>>;
 ```
 
-### TV Layout in `elementwise_add.py`
-
-Ampere GPU uses a `128 = 4 x 32` thread block arrangement:
+In elementwise addition example, Ampere GPU uses a `128 = 4 x 32` thread block arrangement:
 
 ```text
 
@@ -204,7 +343,7 @@ thr_layout = cute.make_ordered_layout((4, 32), order=(1, 0))
 
 The `make_ordered_layout` function aligns strides with the order of the dimensions without manual specification.
 
-Ampere GPU supports a maximum of 128-bit load/store operations, which means it can load `128 // dtype.width` elements per thread. The shape of the value layout is `(4, 128 // dtype.width)`. *(A bit confused here: does this mean each thread executes four 128-bit load/store operations at a time? Why can the number of registers (values) be changed--or does it just mean that the number of registers is always 4 per thread, but the number of elements per register is `128 // dtype.width`, i.e. each register is sliced? Copilot thinks the latter is true.)* `cute` provides a convenient function `make_layout_tv` to create a TV layout using `thr_layout` and `val_layout`:
+Ampere GPU supports a maximum of 128-bit load/store operations, which means it can load `128 // dtype.width` elements per thread. The shape of the value layout is `(4, 128 // dtype.width)`. [^7] `cute` provides a convenient function `make_layout_tv` to create a TV layout using `thr_layout` and `val_layout`:
 
 ```python
 
@@ -234,7 +373,7 @@ Now we can introduce what *division* is. The term "division" here is misleading,
 
 ![Logical Division (contd.)](/images/posts/cutedsl-notes/logical-divide-2.png)
 
-Logical divisions successfully reorganize and regroup the original blocks. However, if we want to pick out one specific block, we still need to traverse and slice the 2D matrix both in the row and column directions, which is not convenient. This is where the **zipped division** comes in: it *zips* the blocks within each group together and arranges them in a 1D array. After zipped division, if we want to pick out the $$n$$-th block, we can simply access the $$n$$-th column of the zipped division tensor, as shown in the picture below.
+Logical divisions successfully reorganize and regroup the original blocks. However, if we want to pick out one specific block, we still need to traverse and slice the 2D matrix both in the row and column directions, which is not convenient. This is where the **zipped division** comes in: it *zips* the blocks within each group together and arranges them in a 1D array (strictly speaking, arranges them in the first mode). After zipped division, if we want to pick out the $$n$$-th block, we can simply access the $$n$$-th column of the zipped division tensor, as shown in the picture below.
 
 ![Zipped Division](/images/posts/cutedsl-notes/zipped-divide.png)
 
@@ -319,10 +458,59 @@ Of all the operations in the intermediate MLIR dumps, some are straightforward a
 
 Straightforward operations are mostly direct extraction or combination of the numbers from shape, stride, etc., or straightforward computation. These operations stay in the code until the first `ConvertToLLVMPass (convert-to-llvm)`.
 
-- `cute.get_layout(tensor)`
-- `cute.get_shape(layout)`
+- `cute.get_iter(tensor)`: Extract the engine (iterator, the pointer to the data)[^8] of the tensor.
+
+  Example: (`%arg0` refers to the original tensor $$A$$; `!memref_gmem_f32_2` type is defined as `!memref_gmem_f32_2 = !cute.memref<f32, gmem, "(?,?):(?,1)">`, which describes the date type, memory space, and layout of the tensor, by default row-major)
+
+  ```cpp
+
+  %iter = cute.get_iter(%arg0) : !memref_gmem_f32_2
+  ```
+
+  After the first `ConvertToLLVMPass (convert-to-llvm)`: (note that `%arg0` has been converted to an LLVM struct type, which displays its information more clearly: the first element `ptr<1>` is the pointer to the data, while the second one `struct<(struct<(i32, i32)>, i32)>)` describes the layout, *with only dynamical shape/stride elements encoded*)
+
+  ```cpp
+
+  %10 = llvm.extractvalue %arg0[0] : !llvm.struct<(ptr<1>, struct<(struct<(i32, i32)>, i32)>)>
+  ```
+
+  The first element -- engine -- gets extracted.
+
+- `cute.get_layout(tensor)`: Extract the layout of the tensor.
+
+  Example:
+
+  ```cpp
+
+  %lay = cute.get_layout(%arg0) : !memref_gmem_f32_2
+  ```
+
+  After the first `ConvertToLLVMPass (convert-to-llvm)`:
+
+  ```cpp
+
+  %11 = llvm.extractvalue %arg0[1] : !llvm.struct<(ptr<1>, struct<(struct<(i32, i32)>, i32)>)> 
+  ```
+
+  The second element -- layout -- gets extracted.
+
+- `cute.get_shape(layout)`: Extract the shape of the layout.
+
+Example:
+
+```cpp
+
+%105 = cute.get_shape(%lay_19) : (!cute.layout<"(?,?):(?,1)">) -> !cute.shape<"(?,?)">
+```
+
+After the first `ConvertToLLVMPass (convert-to-llvm)`:
+
+```cpp
+
+%181 = llvm.extractvalue %125[0] : !llvm.struct<(struct<(i32, i32)>, i32)> 
+```
+
 - `cute.get_strides(layout)`
-- `cute.get_iter(tensor)`
 - `cute.get_leaves(IntTuple)`
 - `cute.get_scalars(layout)`, `cute.get_scalars(layout) <{only_dynamic}>`
 - `cute.make_coord(...)`
@@ -330,6 +518,7 @@ Straightforward operations are mostly direct extraction or combination of the nu
 - `cute.make_stride(...)`
 - `cute.make_layout(shape, stride)`
 - `cute.crd2idx(coord, layout)` (appears in intermediate steps)
+- `cute.make_view(ptr, layout)` (appears in intermediate steps)
 
 We can take `cute.get_shape(layout)` as an example to see its translation to llvm IR. The original code is:
 
@@ -403,7 +592,7 @@ Not-so-straightforward operations are those that require step-by-step lowering p
     ```
   - lowering (`ConvertCuteAlgoToArch (convert-cute-algo-to-arch)`): note that during this step, the sliced thread block sub-tensor `%slice` is replaced by `%view` (of layout `(16,128):(?,1)`)
     ```cpp
-    
+
     %24 = nvvm.read.ptx.sreg.tid.x : i32
     // preparation
     %iter_95 = cute.get_iter(%view) : !memref_gmem_f32_1
@@ -485,6 +674,9 @@ The main computation is performed in `HopperWgmmaGemmKernel.__call__(self, a, b,
 [^3]: Note that as opposed to "thread index first, value index second" ordering in tv layout -- a mapping from `(logical_thr_id, logical_val_id)` to the logical tensor index the `(m, n)` -- here we use the opposite order. *Don't get confused, although I don't know why not keeping the consistency. Maybe we'll see why soon.*
 [^4]: Flattened to one-dimensional indices, the row tiler `3:3` refers to the indices `0, 3, 6` (which means picking out 1 row out of every 3 rows), and the column tiler `(2,4):(1,8)` refers to the indices `0, 1, 8, 9, 16, 17, 24, 25` (which means picking out 2 columns out of every 8 columns). The more general form of such "tiling and picking out" process is described by *complement* and *composition*. See the [CuTe Layout Documentations](https://github.com/NVIDIA/cutlass/blob/main/media/docs/cpp/cute/02_layout_algebra.md) for more details, although these documentations are hard to grasp as well and I am considering writing a more detailed notes on CuTe layout algebra.
 [^5]: I don't quite understand why `?` is not a static 128, though.
+[^6]: The code snippet below is a simplified version, with irrelevant details omitted.
+[^7]: A bit confused here: does this mean each thread executes four 128-bit load/store operations at a time? Why can the number of registers (values) be changed--or does it just mean that the number of registers is always 4 per thread, but the number of elements per register is `128 // dtype.width`, i.e. each register is sliced? Copilot thinks the latter is true.
+[^8]: A tensor is composed of an **engine** together with a layout. According to the official documentation, the engine is a "wrapper for an iterator or an array of data". For our purpose here, treating engines as *pointers to the data* is sufficient.
 
 <script src="https://giscus.app/client.js"
         data-repo="bowenyu066/bowenyu066.github.io"

@@ -6,6 +6,7 @@ import subprocess
 import glob
 import sys
 import time
+import re
 
 POSTS_DIR = '_posts'
 
@@ -28,6 +29,42 @@ def replace_percent_signs(content):
         lines[i] = line.replace('\\%', '%')
     return '\n'.join(lines)
 
+def replace_mlir_with_cpp(content):
+    """For code blocks that contain MLIR code, replace the language
+    identifier from `mlir` to `cpp`."""
+    # lines = content.splitlines()
+    # new_lines = []
+    # in_code_block = False
+    # for line in lines:
+    #     if line.strip().startswith('```'):
+    #         if not in_code_block:
+    #             language = line.strip().replace('```', '')
+    #             if language == 'mlir':
+    #                 new_lines.append('```cpp')
+    #             else:
+    #                 new_lines.append(line)
+    #         else:
+    #             new_lines.append(line)
+    #         in_code_block = not in_code_block
+    #     elif line.strip().startswith('> ```'):
+    #         if not in_code_block:
+    #             language = line.strip().replace('> ```', '').strip()
+    #             if language == 'mlir':
+    #                 new_lines.append('> ```cpp')
+    #             else:
+    #                 new_lines.append(line)
+    #         else:
+    #             new_lines.append(line)
+    #         in_code_block = not in_code_block
+    #     else:
+    #         new_lines.append(line)
+    # return '\n'.join(new_lines)
+    # This pattern finds lines starting a code block with 'mlir'
+    # and replaces 'mlir' with 'cpp', keeping the prefix.
+    pattern = r'^(\s*(?:>\s*)?```)mlir\b'
+    replacement = r'\1cpp'
+    return re.sub(pattern, replacement, content, flags=re.MULTILINE)
+
 def insert_empty_line_in_codeblock(content):
     """Insert an empty line at the beginning of every code block.
     However, if there's already an empty line at the beginning, do nothing."""
@@ -36,6 +73,7 @@ def insert_empty_line_in_codeblock(content):
     new_lines = []
     for i, line in enumerate(lines):
         new_lines.append(line)
+        line = line.strip()
         if line.startswith('```'):
             if not in_code_block:
                 # Start of a code block
@@ -58,6 +96,7 @@ def process_markdown(md_path):
     content = inline_latex_to_display(content)
     content = replace_percent_signs(content)
     content = insert_empty_line_in_codeblock(content)
+    content = replace_mlir_with_cpp(content)
     with open(md_path, 'w', encoding='utf-8') as f:
         f.write(content)
     # print(f"Processed markdown: {md_path}")\
