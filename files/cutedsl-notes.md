@@ -478,22 +478,66 @@ Straightforward operations are mostly direct extraction or combination of the nu
 
 - `cute.get_shape(layout)`: Extract the shape of the layout.
 
-Example:
+  Example:
+  
+  ```mlir
+  %105 = cute.get_shape(%lay_19) : (!cute.layout<"(?,?):(?,1)">) -> !cute.shape<"(?,?)">
+  ```
+  
+  After the first `ConvertToLLVMPass (convert-to-llvm)`:
+  
+  ```mlir
+  %181 = llvm.extractvalue %125[0] : !llvm.struct<(struct<(i32, i32)>, i32)> 
+  ```
 
-```mlir
-%105 = cute.get_shape(%lay_19) : (!cute.layout<"(?,?):(?,1)">) -> !cute.shape<"(?,?)">
-```
+- `cute.get_stride(layout)`: Extract the strides of the layout.
+  
+  Example: [^9]
 
-After the first `ConvertToLLVMPass (convert-to-llvm)`:
+  ```mlir
+  %106 = cute.get_stride(%lay_19) : (!cute.layout<"(?,?):(?,1)">) -> !cute.stride<"(?,1)">
+  ```
 
-```mlir
-%181 = llvm.extractvalue %125[0] : !llvm.struct<(struct<(i32, i32)>, i32)> 
-```
+  After the first `ConvertToLLVMPass (convert-to-llvm)`:
 
-- `cute.get_strides(layout)`
+  ```mlir
+  %182 = llvm.extractvalue %125[1] : !llvm.struct<(struct<(i32, i32)>, struct<(i32, i32)>)>
+  ```
+
 - `cute.get_leaves(IntTuple)`
 - `cute.get_scalars(layout)`, `cute.get_scalars(layout) <{only_dynamic}>`
-- `cute.make_coord(...)`
+
+- `cute.make_coord(*indices) : (*types) -> !cute.coord<"...">`: Create a coordinate tensor with the dimensions specified by the `"..."` part in `!cute.coord<"...">`, such as `%coord_35 = cute.make_coord(%arg4, %arg5) : (i32, i32) -> !cute.coord<"(?,?)">`, `%coord_36 = cute.make_coord(%50) : (i32) -> !cute.coord<"?">`. The `?` in the coordinate tensor indicates where the indices are to be filled in. 
+  
+  Example:
+
+  ```mlir
+  %22 = nvvm.read.ptx.sreg.ctaid.x range <i32, 0, 2147483647> : i32
+  %coord = cute.make_coord(%22) : (i32) -> !cute.coord<"((_,_),?)">
+  %lay = cute.get_layout(%arg0) : !memref_gmem_f32_
+  %idx = cute.crd2idx(%coord, %lay) : (!cute.coord<"((_,_),?)">, !cute.layout<"((16,128),(?,?)):((?,1),(?{div=16},128))">) -> !cute.int_tuple<"?{div=16}">
+  ```
+
+  After the first `ConvertToLLVMPass (convert-to-llvm)`:
+
+  ```mlir
+  %40 = nvvm.read.ptx.sreg.ctaid.x range <i32, 0, 2147483647> : i32
+  %41 = llvm.extractvalue %arg0[1] : !llvm.struct<(ptr<1>, struct<(struct<(i32, i32)>, struct<(i32, i32)>)>)> // layout
+  %49 = llvm.extractvalue %41[0] : !llvm.struct<(struct<(i32, i32)>, struct<(i32, i32)>)>
+  %50 = llvm.extractvalue %49[0] : !llvm.struct<(i32, i32)>
+  %52 = llvm.extractvalue %41[1] : !llvm.struct<(struct<(i32, i32)>, struct<(i32, i32)>)>
+  %54 = llvm.extractvalue %52[1] : !llvm.struct<(i32, i32)>
+  %55 = llvm.sdiv %40, %50 : i32
+  %56 = llvm.srem %40, %50 : i32
+  %57 = llvm.mul %56, %54 : i32
+  %58 = llvm.mlir.constant(128 : i32) : i32
+  %59 = llvm.mul %55, %58 : i32
+  %60 = llvm.add %57, %59 : i32
+  ```
+
+
+  
+  
 - `cute.make_shape(...)`
 - `cute.make_stride(...)`
 - `cute.make_layout(shape, stride)`
@@ -649,6 +693,7 @@ The main computation is performed in `HopperWgmmaGemmKernel.__call__(self, a, b,
 [^6]: The code snippet below is a simplified version, with irrelevant details omitted.
 [^7]: A bit confused here: does this mean each thread executes four 128-bit load/store operations at a time? Why can the number of registers (values) be changed--or does it just mean that the number of registers is always 4 per thread, but the number of elements per register is `128 // dtype.width`, i.e. each register is sliced? Copilot thinks the latter is true.
 [^8]: A tensor is composed of an **engine** together with a layout. According to the official documentation, the engine is a "wrapper for an iterator or an array of data". For our purpose here, treating engines as *pointers to the data* is sufficient.
+[^9]: In the actual IR dump, there has been no use cases of `get_stride` after `CuteFoldStatic (cute-fold-static)` since these `get_stride` operations are all transformed to `get_scalars`. The example given here is a hypothetical one to illustrate how it works.
 
 <script src="https://giscus.app/client.js"
         data-repo="bowenyu066/bowenyu066.github.io"
