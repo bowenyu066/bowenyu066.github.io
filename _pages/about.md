@@ -41,7 +41,35 @@ My resume is attached [here](https://bowenyu066.github.io/cv/).
         </p>
         <br>
         <p style="display: inline-block; vertical-align: top; font-size: 16px; margin-top: 10px;">
-             <a href="https://arxiv.org/pdf/2506.00725" style="text-decoration: none; color: blue;">[Paper]</a>
+             <a href="https://arxiv.org/abs/2506.00725" style="text-decoration: none; color: blue;">[Paper]</a>
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="column" style="display: inline-block; vertical-align: top; width: 25%;">
+        <a href="/images/publications/CrysVCD.png"><img src="/images/publications/CrysVCD.png"></a>
+    </div>
+    <div class="column" style="display: inline-block; vertical-align: top; width: 70%; margin-left: 3%">
+        <p style="display: inline-block; vertical-align: top; font-size: 16px; margin-bottom: 0;"><b>Enhancing Materials Discovery with Valence Constrained Design in Generative Modeling</b></p>
+        <p style="display: inline-block; vertical-align: top; font-size: 14px; margin-top: 0; margin-bottom: 10px;">
+                <span style="color: gray;">Mouyang Cheng<sup>†,*</sup> </span>,
+                <span style="color: gray;">Weiliang Luo<sup>†</sup></span>,
+                <span style="color: gray;">Hao Tang<sup>†</sup></span>,
+                <u><b>Bowen Yu</b></u>,
+                <span style="color: gray;">Yongqiang Cheng</span>,
+                <span style="color: gray;">Weiwei Xie</span>,
+                <span style="color: gray;">Ju Li</span>,
+                <span style="color: gray;">Heather J. Kulik</span>,
+                <span style="color: gray;">and Mingda Li<sup>*</sup></span>
+        </p>
+        <p style="display: inline-block; vertical-align: top; font-size: 12px; margin-top: -5px; color: gray;">
+            <sup>†</sup>These authors contributed equally.<br>
+            <sup>*</sup>Corresponding author.
+        </p>
+        <br>
+        <p style="display: inline-block; vertical-align: top; font-size: 16px; margin-top: 10px;">
+             <a href="https://arxiv.org/abs/2507.19799" style="text-decoration: none; color: blue;">[Paper]</a>
         </p>
     </div>
 </div>
