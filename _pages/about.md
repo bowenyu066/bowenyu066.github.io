@@ -9,13 +9,13 @@ redirect_from:
 
 ## About me
 
-Hello there! I am an undergrad student majoring in Physics (Course 8) and Artificial Intelligence (Course 6-4) at Massachusetts Institute of Technology (MIT), Class of 2027. Before coming to MIT, I studied at the Peking University for one year, where I gained a solid foundation in physics.
+Hello! I’m an undergraduate at MIT, Class of 2027, double-majoring in Physics (Course 8) and Artificial Intelligence (Course 6-4). Before transferring to MIT, I studied physics for a year at Peking University, which gave me a strong foundation in the field.
 
-I have long hoped to explore the mysteries of the universe and contribute to the advancement of science and technology. With the advancement in physics and AI, I am particularly interested in the intersection of both--how to use AI to solve interesting open problems in many-body physics and material science. Currently, I am working as a UROP student in the [MIT Quantum Measurement Group](https://qm.mit.edu) under the supervision of Prof. [Mingda Li](https://web.mit.edu/nse/people/faculty/mli.html). My research focuses on using machine learning to accelerate relevant material property calculations.
+I’ve always been fascinated by the mysteries of the universe and by how science and technology can push the boundaries of what we know. Lately, I’ve become especially interested in the intersection of physics and AI—using machine learning to tackle open problems in many-body physics and materials science. Currently, I’m a UROP student in the [MIT Quantum Measurement Group](https://qm.mit.edu) with Prof. [Mingda Li](https://web.mit.edu/nse/people/faculty/mli.html), where I work on applying deep learning, reinforcement learning, and generative models to challenging problems in condensed matter physics and materials research.
 
-Apart from my academic pursuits, I enjoy long-distance running, playing ping-pong, watching movies, and reading classics. I am also a big fan of the [Three-Body Problem Trilogy](https://en.wikipedia.org/wiki/The_Three-Body_Problem_(novel)) by Liu Cixin, which has greatly influenced my understanding of physics and the universe. I am eager to meet like-minded individuals who share my passion for science and technology.
+Outside the lab, I enjoy long-distance running, playing ping-pong, watching movies, and reading classics. I am also a big fan of the [Three-Body Problem Trilogy](https://en.wikipedia.org/wiki/The_Three-Body_Problem_(novel)) by Liu Cixin—a series that’s shaped the way I think about physics and the universe.
 
-My resume is attached [here](https://bowenyu066.github.io/cv/).
+You can find my resume [here](https://bowenyu066.github.io/cv/). I’m always excited to connect with people who share an interest in science, technology, and discovery!
 
 ## Publications
 
