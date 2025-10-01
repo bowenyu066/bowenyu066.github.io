@@ -22,7 +22,7 @@ repository               : "bowenyu066/bowenyu066.github.io"
 #               Additional customization can be done by editing /_includes/author-profile.html
 author:
   # Biographic information
-  avatar           : "me_6.jpeg"
+  avatar           : "me_6.jpg"
   name             : "Bowen Yu（余博文）"
   pronouns         : "Pronouns: he/him"
   bio              : "Physics & AI undergrad at MIT, passionate about harnessing technology to push the frontiers of science"
