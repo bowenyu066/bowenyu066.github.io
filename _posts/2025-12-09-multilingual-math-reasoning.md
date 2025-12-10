@@ -13,7 +13,7 @@ categories:
 ### Authors: Bowen Yu, Linrui Ma, Yiwei Liang
 
 ## 1. Introduction
-Sequence length constitutes a central bottleneck in modern deep learning. The Transformer architecture has become the dominant architecture in multiple domains, including language modeling, computer vision, and protein structure prediction. Yet, its efficacy is bound by a core limitation: the self-attention mechanism, which scales quadratically with sequence length, $O(n^2 d)$. As a result, despite longer inputs usually help with richer context and more complex reasoning, they also suffer from slower and memory intensive inference.
+Sequence length constitutes a central bottleneck in modern deep learning. The Transformer architecture has become the dominant architecture in multiple domains, including language modeling, computer vision, and protein structure prediction. Yet, its efficacy is bound by a core limitation: the self-attention mechanism, which scales quadratically with sequence length, $$O(n^2 d)$$. As a result, despite longer inputs usually help with richer context and more complex reasoning, they also suffer from slower and memory intensive inference.
 
 Most work that tries to address this challenge focus on how a fixed sequence is processed. Sparse attention reduces the number of pairwise interactions. Learned compression tokens summarize context into a fixed number of vectors. Linear attention variants approximate self-attention to avoid quadratic scaling. In computer vision, patch pruning and latent-space compression pursue similar goals. All of these methods assume that the input representation is fixed, and efficiency must come from better algorithms rather than changing how the input is encoded.
 
@@ -29,7 +29,7 @@ Our results show a consistent pattern. Representation choice clearly affects how
 
 Our findings extend beyond multilingual modeling. If reasoning performance is largely stable across different representation densities once models are adapted, then representation design should be treated as a first-class target for optimization. Instead of focusing only on more efficient attention mechanisms for fixed inputs, we can co-design models and representations that encode the same information in fewer tokens. Natural languages offer one family of such representations; learned compression schemes and domain-specific tokenizations offer others. Our work provides evidence and a concrete approach for studying how representation density interacts with reasoning fidelity, and for using representation design as a practical route to more efficient deep learning systems.
 
-![Figure 1: The Representation Bottleneck. (A) Identical semantic content can be encoded into representations of varying density (e.g., English vs. Chinese). (B) Due to the quadratic cost of self-attention $O(n^2)$, denser representations offer significant computational savings. (C) The critical trade-off between tokenization efficiency and model performance](/images/posts/deep-learning/overview.png)
+![Figure 1: The Representation Bottleneck. (A) Identical semantic content can be encoded into representations of varying density (e.g., English vs. Chinese). (B) Due to the quadratic cost of self-attention $$O(n^2)$$, denser representations offer significant computational savings. (C) The critical trade-off between tokenization efficiency and model performance](/images/posts/deep-learning/overview.png)
 
 ## 2. Related Work
 
@@ -37,11 +37,11 @@ Research into cost-effective sequence modeling generally fall into two catagorie
 
 ### 2.1 Efficient Processing of Fixed Representations
 
-The quadratic cost of self-attention has led to many architectural tricks for cutting compute while keeping performance. A major line of work focuses on sparse attention, as in Longformer [^1] and BigBird [^2]. These models replace full attention with a mix of local windows, a few global tokens, and some random connections. This brings the complexity down from $O(n^2)$ toward $O(n)$ while still allowing information to move across the entire context. In practice, these ideas extend context length by about 4–8× on the same hardware and give noticeable gains on long-document tasks [^2].
+The quadratic cost of self-attention has led to many architectural tricks for cutting compute while keeping performance. A major line of work focuses on sparse attention, as in Longformer [^1] and BigBird [^2]. These models replace full attention with a mix of local windows, a few global tokens, and some random connections. This brings the complexity down from $$O(n^2)$$ toward $$O(n)$$ while still allowing information to move across the entire context. In practice, these ideas extend context length by about 4–8× on the same hardware and give noticeable gains on long-document tasks [^2].
 
 Other approaches reduce the number of tokens as the model runs. In vision transformers, Token Merging (ToMe) [^3] repeatedly merges similar tokens across layers, speeding up inference without any task-specific finetuning. Joint Token Pruning and Squeezing [^4] pushes this further by folding information from dropped tokens into the ones that remain, rather than discarding it. These results make a clear point: not all tokens matter equally. In some setups, cutting 95% of tokens only costs under 1% accuracy [^5].
 
-Linear-attention variants take a different route, approximating the softmax kernel so attention can be computed with associative matrix multiplications, again bringing complexity closer to $O(n)$ [^6]. Across all of these methods, the input sequence is assumed fixed, and the goal is to process it more efficiently. This leaves open the question of whether we can instead redesign the representation itself to be more efficient.
+Linear-attention variants take a different route, approximating the softmax kernel so attention can be computed with associative matrix multiplications, again bringing complexity closer to $$O(n)$$ [^6]. Across all of these methods, the input sequence is assumed fixed, and the goal is to process it more efficiently. This leaves open the question of whether we can instead redesign the representation itself to be more efficient.
 
 ### 2.2 Compact Representations Across Domains
 A separate line of work asks whether we can encode the same information more compactly before it ever reaches the transformer.
@@ -66,7 +66,7 @@ Our experiments span three categories of models. For SOTA evaluation, we use thr
 
 For controlled comparison, we evaluate two open-source 8B-parameter models with contrasting training distributions: Qwen3-8B, which emphasizes multilingual capability, and Llama-3.1-8B-Instruct, which is predominantly English-centric. This pairing allows us to isolate the effect of training distribution while controlling for model scale.
 
-For fine-tuning experiments, we adapt Llama-3.1-8B on the Chinese GSM8K training set using Low-Rank Adaptation (LoRA) with rank 32 and $\alpha=64$, targeting all attention and MLP projection matrices. Training proceeds for 500 steps with learning rate $10^{-5}$ and gradient accumulation over 2 steps. This lightweight adaptation tests whether representation bottlenecks can be overcome with modest additional training.
+For fine-tuning experiments, we adapt Llama-3.1-8B on the Chinese GSM8K training set using Low-Rank Adaptation (LoRA) with rank 32 and $$\alpha=64$$, targeting all attention and MLP projection matrices. Training proceeds for 500 steps with learning rate $$10^{-5}$$ and gradient accumulation over 2 steps. This lightweight adaptation tests whether representation bottlenecks can be overcome with modest additional training.
 
 ### 3.3 Evaluation Protocol
 
@@ -110,7 +110,7 @@ A notable pattern emerges: DeepSeek-V3.2 produces substantially shorter Chinese 
 
 Yet whether models exploit this intrinsic density varies. DeepSeek generates concise Chinese outputs, while ChatGPT and Gemini do not leverage this compactness to the same degree. This difference in generation verbosity foreshadows the divergence we observe at the token level.
 
-**Realized Density: Token-Level Analysis.** The central question is whether intrinsic density translates to computational savings. We define **realized density** as information per token. It is the actual sequence length processed by the Transformer, which determines the computational cost via attention's $O(n^2)$ complexity.
+**Realized Density: Token-Level Analysis.** The central question is whether intrinsic density translates to computational savings. We define **realized density** as information per token. It is the actual sequence length processed by the Transformer, which determines the computational cost via attention's $$O(n^2)$$ complexity.
 
 ![Figure 6: Token length distributions for ChatGPT-5.1 over all four languages](/images/posts/deep-learning/token_distribution_chatgpt_mmath.png)
 
@@ -130,9 +130,9 @@ Here we observe a critical divergence:
 | ChatGPT-5.1 | 282.6 | 375.8 | 1.33 | Inverted |
 | Gemini-2.5-Flash | 360.5 | 503.8 | 1.40 | Inverted |
 
-**The Encoder Gap.** This divergence isolates the **Encoder Gap**, which is the discrepancy between intrinsic and realized density. For DeepSeek, the tokenizer (and model training) preserves the density advantage: fewer characters $\rightarrow$ fewer tokens. For ChatGPT and Gemini, the encoding is inefficient: the tokenizer fragments the dense Chinese signal into more tokens, or the model generates more verbose outputs, negating the representation's inherent compactness.
+**The Encoder Gap.** This divergence isolates the **Encoder Gap**, which is the discrepancy between intrinsic and realized density. For DeepSeek, the tokenizer (and model training) preserves the density advantage: fewer characters $$\rightarrow$$ fewer tokens. For ChatGPT and Gemini, the encoding is inefficient: the tokenizer fragments the dense Chinese signal into more tokens, or the model generates more verbose outputs, negating the representation's inherent compactness.
 
-To quantify this independent of any single model's tokenizer, we re-tokenized DeepSeek-V3.2's outputs (problems correct in both EN and ZH, $N=321$) using five different tokenizers:
+To quantify this independent of any single model's tokenizer, we re-tokenized DeepSeek-V3.2's outputs (problems correct in both EN and ZH, $$N=321$$) using five different tokenizers:
 
 | Tokenizer | Avg EN Tokens | Avg ZH Tokens | ZH/EN Ratio |
 |-----------|---------------|---------------|-------------|
