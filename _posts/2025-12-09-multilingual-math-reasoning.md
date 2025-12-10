@@ -2,11 +2,12 @@
 title: Representation Efficiency in Neural Reasoning--Evidence from Multilingual Mathematical Benchmarks
 date: 2025-12-9 23:44:45 -0500
 permalink: /posts/notes/multilingual-math-reasoning/
-excerpt: "test"
+excerpt: "Exploring how representation choice affects reasoning quality and efficiency in deep learning models using multilingual mathematical benchmarks."
 tags: 
     - Computer Science
+    - Deep Learning
 categories: 
-    - Notes
+    - Blogs
 ---
 
 ### Authors: Bowen Yu, Linrui Ma, Yiwei Liang
