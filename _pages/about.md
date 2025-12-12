@@ -7,6 +7,10 @@ redirect_from:
   - /about.html
 ---
 
+## NEWS
+
+**A beta version of my website is now available at [bowen-yu-personal.github.io](https://bowen-yu-personal.github.io/index.html)! Please check it out and let me know if you have any feedback!**
+
 ## About me
 
 Hello! I’m an undergraduate at MIT, Class of 2027, double-majoring in Physics (Course 8) and Artificial Intelligence (Course 6-4). Before transferring to MIT, I studied physics for a year at Peking University, which gave me a strong foundation in the field.
