@@ -70,8 +70,8 @@ redirect_from:
   - In review, paper available at: [arXiv:2507.19799](https://arxiv.org/abs/2507.19799)
   ![CrysVCD workflow demonstration]({% include base_path %}/images/publications/CrysVCD.png)
 
-**3. Reinforcement learning-guided optimization of critical current in high-temperature superconductors**
-  *Mouyang Cheng<sup>†,*</sup>, Qiwei Wan<sup>†</sup>, <b><u>Bowen Yu</u></b><sup>†</sup>, Eunbi Rha, Michael J. Laundry, and Mingda Li<sup>*</sup>* <br>
+**3. Reinforcement learning-guided optimization of critical current in high-temperature superconductors** <br>
+  *Mouyang Cheng<sup>†,*</sup>, Qiwei Wan<sup>†</sup>, <b><u>Bowen Yu</u></b><sup>†</sup>, Eunbi Rha, Michael J. Landry, and Mingda Li<sup>*</sup>* <br>
   <span style="color: gray; font-size: 12px;">
   <sup>†</sup>These authors contributed equally.
   <sup>*</sup>Corresponding author.

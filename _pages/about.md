@@ -74,6 +74,31 @@ You can find my resume [here](https://bowenyu066.github.io/cv/). I’m always ex
     </div>
 </div>
 
+<div class="row">
+    <div class="column" style="display: inline-block; vertical-align: top; width: 25%;">
+        <a href="/images/publications/RLJC.png"><img src="/images/publications/RLJC.png"></a>
+    </div>
+    <div class="column" style="display: inline-block; vertical-align: top; width: 70%; margin-left: 3%">
+        <p style="display: inline-block; vertical-align: top; font-size: 16px; margin-bottom: 0;"><b>Reinforcement learning-guided optimization of critical current in high-temperature superconductors</b></p>
+        <p style="display: inline-block; vertical-align: top; font-size: 14px; margin-top: 0; margin-bottom: 10px;">
+                <span style="color: gray;">Mouyang Cheng<sup>†,*</sup> </span>,
+                <span style="color: gray;">Qiwei Wan<sup>†</sup></span>,
+                <u><b>Bowen Yu<sup>†</sup></b></u>,
+                <span style="color: gray;">Eunbi Rha</span>,
+                <span style="color: gray;">Michael J. Landry</span>,
+                <span style="color: gray;">and Mingda Li<sup>*</sup></span>
+        </p>
+        <p style="display: inline-block; vertical-align: top; font-size: 12px; margin-top: -5px; color: gray;">
+            <sup>†</sup>These authors contributed equally.<br>
+            <sup>*</sup>Corresponding author.
+        </p>
+        <br>
+        <p style="display: inline-block; vertical-align: top; font-size: 16px; margin-top: 10px;">
+             <a href="https://arxiv.org/abs/2510.22424" style="text-decoration: none; color: blue;">[Paper]</a>
+        </p>
+    </div>
+</div>
+
 <script src="https://giscus.app/client.js"
         data-repo="bowenyu066/bowenyu066.github.io"
         data-repo-id="R_kgDOOSbJ2A"

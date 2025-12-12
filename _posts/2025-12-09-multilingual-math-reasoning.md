@@ -356,9 +356,6 @@ The Chinese GSM8K dataset was created by translating the original English GSM8K 
 | Max Completion Length | 4096 tokens |
 | Training Data | Chinese GSM8K train split (7,473 examples) |
 
-
-### References
-
 [^1]: Beltagy, I., Peters, M. E., & Cohan, A. (2020). Longformer: The Long-Document Transformer. arXiv:2004.05150.
 [^2]: Zaheer, M., Guruganesh, G., Dubey, A., et al. (2020). Big Bird: Transformers for Longer Sequences. NeurIPS 2020.
 [^3]: Bolya, D., Fu, C.-Y., Dai, X., Zhang, P., Feichtenhofer, C., & Hoffman, J. (2023). Token Merging: Your ViT But Faster. ICLR 2023.
@@ -371,3 +368,19 @@ The Chinese GSM8K dataset was created by translating the original English GSM8K 
 [^10]: Chen, T., et al. (2024). Variational Autoencoder-based Neural Network Model Compression. arXiv:2408.14513.
 [^11]: Qwen Team. (2025). Qwen3-8B Model Card. Hugging Face. https://huggingface.co/Qwen/Qwen3-8B
 [^12]: Meta AI. (2024). Llama-3.1-8B-Instruct Model Card. Hugging Face. https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct
+
+<script src="https://giscus.app/client.js"
+        data-repo="bowenyu066/bowenyu066.github.io"
+        data-repo-id="R_kgDOOSbJ2A"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOOSbJ2M4CsmZz"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="light"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
+</script>

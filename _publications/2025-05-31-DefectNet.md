@@ -12,6 +12,10 @@ paperurl: 'https://arxiv.org/abs/2506.00725'
 # citation: 'Your Name, You. (2009). &quot;Paper Title Number 1.&quot; <i>Journal 1</i>. 1(1).'
 ---
 *Mouyang Cheng<sup>†,*</sup>, Chu-Liang Fu<sup>†</sup>, <b><u>Bowen Yu</u></b><sup>†</sup>, Eunbi Rha, Abhijatmedhi Chotrattanapituk, Douglas L Abernathy, Yongqiang Cheng, and Mingda Li<sup>*</sup>*
+  <span style="color: gray; font-size: 12px;">
+  <sup>†</sup>These authors contributed equally.
+  <sup>*</sup>Corresponding author.
+  </span>
 
 ![DefectNet workflow demonstration]({% include base_path %}/images/publications/DefectNet.png)
 
