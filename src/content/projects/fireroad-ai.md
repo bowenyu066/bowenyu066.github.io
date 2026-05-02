@@ -24,6 +24,6 @@ showHeroImage: false
 
 The current implementation uses a static React frontend with a small Node/Express backend. The backend keeps model API keys server-side, exposes chat and course-planning routes, and supports a tool-calling workflow so the assistant can inspect course data before answering.
 
-The project won **MIT CSAIL Agentic AI Hackathon 2026** in the Jane Street track! MIT students can sign up and get started with the current prototype at this [link](https://fireroad-ai-lime.vercel.app). Shout out to my wonderful teammates (Kangyang Zhou, Yifan Kang, Chunji Wang, and Dianne Cao) for the fun collab and to the organizers for putting on a great event!
+The project won **MIT CSAIL Agentic AI Hackathon 2026** in the Agents for MIT Track! MIT students can sign up and get started with the current prototype at this [link](https://fireroad-ai-lime.vercel.app). Shout out to my wonderful teammates (Kangyang Zhou, Yifan Kang, Chunji Wang, and Dianne Cao) for the fun collab and to the organizers for putting on a great event!
 
 ![Team Photo](/images/projects/fireroad.ai/team.png)
