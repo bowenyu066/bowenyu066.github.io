@@ -29,8 +29,12 @@ const blogs = defineCollection({
     excerpt: z.string(),
     image: z.string().optional(),
     imageAlt: z.string().optional(),
+    showHeroImage: z.boolean().default(true),
     tags: z.array(z.string()).optional(),
     categories: z.array(z.string()).optional(),
+    show: z.boolean().default(true),
+    highlighted: z.boolean().default(false),
+    highlightOrder: z.number().optional(),
   }),
 });
 
@@ -42,12 +46,15 @@ const projects = defineCollection({
     excerpt: z.string(),
     image: z.string().optional(),
     imageAlt: z.string().optional(),
+    showHeroImage: z.boolean().default(true),
     tags: z.array(z.string()).optional(),
     links: z.array(z.object({
       label: z.string(),
       url: z.string().url(),
     })).optional(),
     draft: z.boolean().default(false),
+    highlighted: z.boolean().default(false),
+    highlightOrder: z.number().optional(),
   }),
 });
 

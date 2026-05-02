@@ -9,8 +9,7 @@ arxivDate: 2025-07-26
 status: "In review"
 arxivUrl: "https://arxiv.org/abs/2507.19799"
 paperUrl: "https://arxiv.org/abs/2507.19799"
-highlighted: true
-highlightOrder: 2
+highlighted: false
 ---
 
 Diffusion-based deep generative models have emerged as powerful tools for inverse materials design. Yet many existing approaches overlook essential chemical constraints such as oxidation state balance, which can lead to chemically invalid structures.

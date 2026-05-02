@@ -4,6 +4,8 @@ date: 2025-7-3 17:44:03 +0800
 excerpt: "Notes on linear layouts in Triton and its conversion with various traditional layout types."
 image: "/images/posts/2025-6-17-linear-layouts-in-triton/1.png"
 imageAlt: "Linear layout basis diagram"
+highlighted: true
+highlightOrder: 1
 tags: 
     - Computer Science
 categories: 
@@ -681,4 +683,3 @@ L(T) = [{0, 4, 8, 12}, {1, 5, 9, 13}, {2, 6, 10, 14}, {3, 7, 11, 15},
 [^2]: https://github.com/triton-lang/triton/blob/main/include/triton/Dialect/TritonGPU/IR/TritonGPUAttrDefs.td
 [^3]: https://github.com/triton-lang/triton/blob/main/lib/Dialect/TritonGPU/IR/LinearLayoutConversions.cpp
 [^4]: https://github.com/triton-lang/triton/blob/main/include/triton/Tools/LinearLayout.h
-

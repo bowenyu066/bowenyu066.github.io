@@ -8,6 +8,7 @@ tags:
     - Computer Science
 categories: 
     - Notes
+show: false
 ---
 
 https://www.coursera.org/learn/build-a-computer

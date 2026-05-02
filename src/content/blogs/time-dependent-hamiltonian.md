@@ -4,6 +4,7 @@ date: "2024-11-14"
 excerpt: "We prove the explicit expression of the time-dependent Hamiltonian in Heisenberg picture."
 tags:
   - Physics
+show: false
 ---
 The Heisenberg Hamiltonian
 

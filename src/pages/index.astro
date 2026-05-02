@@ -10,9 +10,15 @@ const highlighted = publications
   .filter((publication) => publication.data.highlighted)
   .sort((a, b) => (a.data.highlightOrder ?? 999) - (b.data.highlightOrder ?? 999));
 
-const blogs = (await getCollection('blogs'))
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-  .slice(0, 4);
+const highlightedBlogs = (await getCollection('blogs'))
+  .filter((entry) => entry.data.show)
+  .filter((entry) => entry.data.highlighted)
+  .sort((a, b) => (a.data.highlightOrder ?? 999) - (b.data.highlightOrder ?? 999));
+
+const highlightedProjects = (await getCollection('projects'))
+  .filter((entry) => !entry.data.draft)
+  .filter((entry) => entry.data.highlighted)
+  .sort((a, b) => (a.data.highlightOrder ?? 999) - (b.data.highlightOrder ?? 999));
 ---
 
 <BaseLayout title="Bowen Yu" description="Bowen Yu — undergraduate at MIT, working on machine learning for condensed matter physics and materials science." page="home">
@@ -62,11 +68,21 @@ const blogs = (await getCollection('blogs'))
 
     <section class="section">
       <div class="section-head">
-        <h2>Recent posts</h2>
+        <h2>Highlighted posts</h2>
         <a class="section-link" href="/blogs/">All posts <Icon name="arrow-right" size={14} /></a>
       </div>
       <div class="card-grid">
-        {blogs.map((entry) => <ContentCard entry={entry} type="blogs" />)}
+        {highlightedBlogs.map((entry) => <ContentCard entry={entry} type="blogs" />)}
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Highlighted projects</h2>
+        <a class="section-link" href="/projects/">All projects <Icon name="arrow-right" size={14} /></a>
+      </div>
+      <div class="card-grid">
+        {highlightedProjects.map((entry) => <ContentCard entry={entry} type="projects" />)}
       </div>
     </section>
   </main>

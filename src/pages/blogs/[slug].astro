@@ -4,10 +4,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
 export async function getStaticPaths() {
   const blogs = await getCollection('blogs');
-  return blogs.map((entry) => ({
-    params: { slug: entry.id },
-    props: { entry },
-  }));
+  return blogs
+    .filter((entry) => entry.data.show)
+    .map((entry) => ({
+      params: { slug: entry.id },
+      props: { entry },
+    }));
 }
 
 const { entry } = Astro.props;
@@ -35,7 +37,7 @@ const formatDate = (date) => new Intl.DateTimeFormat('en', {
         )}
       </header>
 
-      {data.image && <img class="article-hero-image" src={data.image} alt={data.imageAlt || data.title}>}
+      {data.image && data.showHeroImage && <img class="article-hero-image" src={data.image} alt={data.imageAlt || data.title}>}
 
       <div class="prose">
         <Content />

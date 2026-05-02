@@ -78,6 +78,10 @@ date: 2026-02-01
 excerpt: "Short summary shown on the index."
 image: "/images/posts/folder/cover.png"
 imageAlt: "Cover image description"
+showHeroImage: true
+show: true
+highlighted: false
+highlightOrder: 1
 tags:
   - Computer Science
   - Physics
@@ -87,6 +91,12 @@ Markdown body.
 ```
 
 Posts are ordered by `date`, newest first. Drop images under `public/images/posts/...`.
+
+Use `show: false` for old posts you want to keep in the repository but hide from the public site. Hidden posts are excluded from the homepage, the blog index, and generated blog detail pages.
+
+Use `showHeroImage: false` when the `image` should appear as a card thumbnail but not as the large image at the top of the detail page.
+
+Use `highlighted: true` to show the post on the homepage. `highlightOrder` controls the homepage order.
 
 ## Add a project
 
@@ -99,6 +109,9 @@ date: 2026-03-01
 excerpt: "Short project summary."
 image: "/images/projects/cover.png"
 imageAlt: "Project screenshot"
+showHeroImage: true
+highlighted: false
+highlightOrder: 1
 tags:
   - AI
 links:
@@ -111,6 +124,10 @@ Project writeup.
 ```
 
 `draft: true` hides the project from the index until you flip it.
+
+Use `showHeroImage: false` when the `image` should appear as a card thumbnail but not as the large image at the top of the detail page.
+
+Use `highlighted: true` to show the project on the homepage. `highlightOrder` controls the homepage order.
 
 ## CV
 

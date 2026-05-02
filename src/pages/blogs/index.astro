@@ -3,7 +3,9 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ContentCard from '../../components/ContentCard.astro';
 
-const blogs = (await getCollection('blogs')).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const blogs = (await getCollection('blogs'))
+  .filter((entry) => entry.data.show)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 ---
 
 <BaseLayout title="Blogs | Bowen Yu" description="Blog posts and notes by Bowen Yu." page="blogs">

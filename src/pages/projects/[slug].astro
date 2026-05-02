@@ -47,7 +47,7 @@ const formatDate = (date) => new Intl.DateTimeFormat('en', {
         )}
       </header>
 
-      {data.image && <img class="article-hero-image" src={data.image} alt={data.imageAlt || data.title}>}
+      {data.image && data.showHeroImage && <img class="article-hero-image" src={data.image} alt={data.imageAlt || data.title}>}
 
       <div class="prose">
         <Content />

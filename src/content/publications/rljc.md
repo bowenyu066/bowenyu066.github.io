@@ -9,8 +9,7 @@ arxivDate: 2025-10-25
 status: "In review"
 arxivUrl: "https://arxiv.org/abs/2510.22424"
 paperUrl: "https://arxiv.org/abs/2510.22424"
-highlighted: true
-highlightOrder: 3
+highlighted: false
 ---
 
 High-temperature superconductors are essential for next-generation energy and quantum technologies, yet their performance is often limited by the critical current density (Jc), which is strongly influenced by microstructural defects. Optimizing Jc through defect engineering is challenging due to the complex interplay of defect type, density, and spatial correlation.
