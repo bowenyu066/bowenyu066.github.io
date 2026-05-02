@@ -1,0 +1,73 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PublicationItem from '../components/PublicationItem.astro';
+import ContentCard from '../components/ContentCard.astro';
+import Icon from '../components/Icon.astro';
+
+const publications = await getCollection('publications');
+const highlighted = publications
+  .filter((publication) => publication.data.highlighted)
+  .sort((a, b) => (a.data.highlightOrder ?? 999) - (b.data.highlightOrder ?? 999));
+
+const blogs = (await getCollection('blogs'))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 4);
+---
+
+<BaseLayout title="Bowen Yu" description="Bowen Yu — undergraduate at MIT, working on machine learning for condensed matter physics and materials science." page="home">
+  <main>
+    <section class="hero">
+      <div class="hero-text">
+        <h1>Bowen Yu <span class="name-zh">余博文</span></h1>
+        <p class="hero-tag">Undergraduate, MIT Physics &amp; AI</p>
+
+        <div class="bio">
+          <p>
+            I'm an undergraduate at MIT (Class of 2027), double-majoring in Physics (Course 8) and
+            Artificial Intelligence (Course 6-4). Before MIT I spent a year studying physics at Peking University.
+          </p>
+          <p>
+            I work with Prof. <a href="https://web.mit.edu/nse/people/faculty/mli.html" target="_blank" rel="noreferrer">Mingda Li</a>
+            in the <a href="https://qm.mit.edu" target="_blank" rel="noreferrer">MIT Quantum Measurement Group</a>
+            on machine learning for condensed matter physics, materials discovery, and defect engineering.
+          </p>
+          <p>
+            Outside the lab, I enjoy long-distance running, ping-pong, classic films, and Liu Cixin's novels.
+          </p>
+        </div>
+
+        <div class="socials" aria-label="Contact">
+          <a href="mailto:bowenyu@mit.edu" aria-label="Email"><Icon name="mail" /></a>
+          <a href="https://github.com/bowenyu066" target="_blank" rel="noreferrer" aria-label="GitHub"><Icon name="github" /></a>
+          <a href="https://www.linkedin.com/in/bowen-yu-6350802bb" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Icon name="linkedin" /></a>
+          <a href="https://www.zhihu.com/people/uni-fish" target="_blank" rel="noreferrer" aria-label="Zhihu"><Icon name="zhihu" /></a>
+        </div>
+      </div>
+
+      <figure class="portrait">
+        <img src="/images/me_6.jpg" alt="Bowen Yu" loading="eager">
+      </figure>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Selected publications</h2>
+        <a class="section-link" href="/publications/">All publications <Icon name="arrow-right" size={14} /></a>
+      </div>
+      <ol class="pub-list" data-numbered="true">
+        {highlighted.map((publication) => <PublicationItem publication={publication} />)}
+      </ol>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Recent posts</h2>
+        <a class="section-link" href="/blogs/">All posts <Icon name="arrow-right" size={14} /></a>
+      </div>
+      <div class="card-grid">
+        {blogs.map((entry) => <ContentCard entry={entry} type="blogs" />)}
+      </div>
+    </section>
+  </main>
+</BaseLayout>

@@ -1,0 +1,37 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PublicationItem from '../../components/PublicationItem.astro';
+
+const publications = await getCollection('publications');
+const highlighted = publications
+  .filter((publication) => publication.data.highlighted)
+  .sort((a, b) => (a.data.highlightOrder ?? 999) - (b.data.highlightOrder ?? 999));
+const fullList = [...publications].sort((a, b) => b.data.arxivDate.valueOf() - a.data.arxivDate.valueOf());
+---
+
+<BaseLayout title="Publications | Bowen Yu" description="Publications by Bowen Yu." page="publications">
+  <main>
+    <section class="section">
+      <h1>Publications</h1>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Selected</h2>
+      </div>
+      <ol class="pub-list" data-numbered="true">
+        {highlighted.map((publication) => <PublicationItem publication={publication} />)}
+      </ol>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>All publications</h2>
+      </div>
+      <ol class="pub-list" data-numbered="true">
+        {fullList.map((publication) => <PublicationItem publication={publication} />)}
+      </ol>
+    </section>
+  </main>
+</BaseLayout>

@@ -1,0 +1,75 @@
+---
+const { name, size = 18, label } = Astro.props;
+const ariaProps = label ? { 'aria-label': label, role: 'img' } : { 'aria-hidden': 'true' };
+---
+
+{name === 'mail' && (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" {...ariaProps}>
+    <rect x="2.5" y="4.5" width="19" height="15" rx="2"/>
+    <path d="m3 7 9 6 9-6"/>
+  </svg>
+)}
+
+{name === 'github' && (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" {...ariaProps}>
+    <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55 0-.27-.01-1-.02-1.95-3.2.7-3.87-1.54-3.87-1.54-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.75 1.18 1.75 1.18 1.02 1.75 2.68 1.25 3.34.95.1-.74.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.18a10.97 10.97 0 0 1 5.74 0c2.18-1.49 3.14-1.18 3.14-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.83 1.18 3.09 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.13 0 1.54-.01 2.79-.01 3.16 0 .31.21.67.8.55C20.21 21.39 23.5 17.07 23.5 12 23.5 5.65 18.35.5 12 .5z"/>
+  </svg>
+)}
+
+{name === 'linkedin' && (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" {...ariaProps}>
+    <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/>
+  </svg>
+)}
+
+{name === 'zhihu' && (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" {...ariaProps}>
+    <path d="M5.72 0C2.25 0 0 2.25 0 5.72v12.56C0 21.75 2.25 24 5.72 24h12.56C21.75 24 24 21.75 24 18.28V5.72C24 2.25 21.75 0 18.28 0H5.72zm1.96 4.08c-.27.68-.81 2.25-1.18 2.92h4.49c.27 0 .17.93.17 1.31H9.79c0 .59-.03 2.52-.06 3.28h2.21a4 4 0 0 1 0 .73c-.02.76-.2.59-.45.59H9.73c.21 1.86 1.96 3.7 2.62 4.39-.18.41-.4.78-.69 1.1-1.08-1.04-1.78-2.1-2.12-3.16-.55 1.81-1.53 3.38-2.95 4.7-.41-.37-.63-.58-1.12-.92 1.62-1.23 2.66-2.75 3.11-4.55h-2.5s.03-.51.16-1.49h3.08c.04-.49.06-1.62.07-3.27H7.14c-.35.9-.62 1.39-1.06 2.18-.37-.21-.81-.44-1.49-.69 1.06-1.62 1.74-3.45 2.03-5.47l1.06.35zm9.08 1.25h.93v9.18h2.5v1.35h-2.5v3.57s.01.12-.11.12c-.3 0-1.32.01-1.94-.12v-1.45h-3.42v-1.47h3.42V5.33z"/>
+  </svg>
+)}
+
+{name === 'sun' && (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" {...ariaProps}>
+    <circle cx="12" cy="12" r="4"/>
+    <path d="M12 2v2"/><path d="M12 20v2"/>
+    <path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/>
+    <path d="M2 12h2"/><path d="M20 12h2"/>
+    <path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
+  </svg>
+)}
+
+{name === 'moon' && (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" {...ariaProps}>
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  </svg>
+)}
+
+{name === 'arxiv' && (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" {...ariaProps}>
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+    <path d="M14 2v6h6"/>
+    <path d="M9 13h6"/>
+    <path d="M9 17h4"/>
+  </svg>
+)}
+
+{name === 'paper' && (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" {...ariaProps}>
+    <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+    <path d="M14 3v6h6"/>
+  </svg>
+)}
+
+{name === 'external' && (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" {...ariaProps}>
+    <path d="M7 17 17 7"/>
+    <path d="M8 7h9v9"/>
+  </svg>
+)}
+
+{name === 'arrow-right' && (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" {...ariaProps}>
+    <path d="M5 12h14"/>
+    <path d="m13 5 7 7-7 7"/>
+  </svg>
+)}

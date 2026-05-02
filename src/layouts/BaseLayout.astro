@@ -1,0 +1,95 @@
+---
+import Comments from '../components/Comments.astro';
+import Icon from '../components/Icon.astro';
+import '../styles/site.css';
+
+const {
+  title = 'Bowen Yu',
+  description = 'Bowen Yu personal website.',
+  page = '',
+  comments = true,
+} = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{title}</title>
+    <meta name="description" content={description}>
+    <link rel="icon" href="/images/favicon.ico">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+    <script is:inline>
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.dataset.theme = savedTheme || (prefersDark ? 'dark' : 'light');
+    </script>
+  </head>
+  <body data-page={page}>
+    <header class="site-header">
+      <div class="site-header-inner">
+        <a class="brand" href="/">Bowen Yu</a>
+        <nav class="nav-links" aria-label="Primary">
+          <a href="/publications/" data-nav="publications">Publications</a>
+          <a href="/blogs/" data-nav="blogs">Blogs</a>
+          <a href="/projects/" data-nav="projects">Projects</a>
+          <a href="/files/cv.pdf" target="_blank" rel="noreferrer">CV</a>
+          <button class="theme-toggle" type="button" aria-label="Toggle dark mode" data-theme-toggle>
+            <span data-theme-icon="light"><Icon name="moon" size={17} /></span>
+            <span data-theme-icon="dark" hidden><Icon name="sun" size={17} /></span>
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <slot />
+
+    {comments && <Comments />}
+
+    <footer class="site-footer">
+      <p>© {year} Bowen Yu</p>
+      <p><a href="https://github.com/bowenyu066/bowenyu066.github.io" target="_blank" rel="noreferrer">Source</a></p>
+    </footer>
+
+    <script is:inline>
+      const page = document.body.dataset.page;
+      document.querySelector(`[data-nav="${page}"]`)?.setAttribute('aria-current', 'page');
+
+      const button = document.querySelector('[data-theme-toggle]');
+      const lightIcon = document.querySelector('[data-theme-icon="light"]');
+      const darkIcon = document.querySelector('[data-theme-icon="dark"]');
+
+      const syncIcons = () => {
+        const isDark = document.documentElement.dataset.theme === 'dark';
+        if (lightIcon && darkIcon) {
+          lightIcon.hidden = isDark;
+          darkIcon.hidden = !isDark;
+        }
+      };
+      const syncGiscusTheme = () => {
+        const theme = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+        const iframe = document.querySelector('iframe.giscus-frame');
+        iframe?.contentWindow?.postMessage({ giscus: { setConfig: { theme } } }, 'https://giscus.app');
+      };
+
+      syncIcons();
+      button?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+        syncIcons();
+        syncGiscusTheme();
+      });
+      window.addEventListener('message', syncIcons);
+
+      const header = document.querySelector('.site-header');
+      const onScroll = () => {
+        if (header) header.dataset.scrolled = window.scrollY > 4 ? 'true' : 'false';
+      };
+      onScroll();
+      window.addEventListener('scroll', onScroll, { passive: true });
+    </script>
+  </body>
+</html>

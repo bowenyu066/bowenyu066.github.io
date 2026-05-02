@@ -1,0 +1,51 @@
+---
+import Icon from './Icon.astro';
+
+const { publication } = Astro.props;
+const data = publication.data;
+
+const formatDate = (date) => new Intl.DateTimeFormat('en', {
+  year: 'numeric',
+  month: 'short',
+  timeZone: 'UTC',
+}).format(date);
+
+const venueTag = data.venue ? data.venue : 'In review';
+const dateLine = data.publicationDate
+  ? `Published ${formatDate(data.publicationDate)} · arXiv ${formatDate(data.arxivDate)}`
+  : `arXiv ${formatDate(data.arxivDate)}`;
+
+const detailHref = `/publications/${publication.id}/`;
+const [beforeMe, afterMe = ''] = data.authors.split('Bowen Yu');
+---
+
+<li class="pub-item">
+  <a class="pub-thumb" href={detailHref} aria-label={`Open ${data.title}`}>
+    <img src={data.image} alt={data.imageAlt || data.title} loading="lazy">
+  </a>
+  <div class="pub-body">
+    <h3><a href={detailHref}>{data.title}</a></h3>
+    <p class="pub-authors">{beforeMe}<strong>Bowen Yu</strong>{afterMe}</p>
+    {data.authorNote && <p class="pub-note">{data.authorNote}</p>}
+    <p class="pub-venue">
+      <span class="venue-tag">{venueTag}</span>
+      <span class="meta">{dateLine}</span>
+    </p>
+    <p class="pub-summary">{data.summary}</p>
+    <div class="pub-links">
+      {data.arxivUrl && (
+        <a href={data.arxivUrl} target="_blank" rel="noreferrer">
+          <Icon name="arxiv" size={15} />arXiv
+        </a>
+      )}
+      {data.paperUrl && data.paperUrl !== data.arxivUrl && (
+        <a href={data.paperUrl} target="_blank" rel="noreferrer">
+          <Icon name="paper" size={15} />Paper
+        </a>
+      )}
+      <a href={detailHref}>
+        <Icon name="external" size={15} />Details
+      </a>
+    </div>
+  </div>
+</li>

@@ -1,0 +1,60 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+
+export async function getStaticPaths() {
+  const publications = await getCollection('publications');
+  return publications.map((publication) => ({
+    params: { slug: publication.id },
+    props: { publication },
+  }));
+}
+
+const { publication } = Astro.props;
+const { Content } = await render(publication);
+const data = publication.data;
+const formatDate = (date) => new Intl.DateTimeFormat('en', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+}).format(date);
+const [beforeMe, afterMe = ''] = data.authors.split('Bowen Yu');
+---
+
+<BaseLayout title={`${data.title} | Bowen Yu`} description={data.summary} page="publications">
+  <main>
+    <article class="article">
+      <a class="back-link" href="/publications/">← Publications</a>
+      <header class="article-header">
+        <h1>{data.title}</h1>
+        <p class="article-meta">{beforeMe}<strong>Bowen Yu</strong>{afterMe}</p>
+        {data.authorNote && <p class="article-note">{data.authorNote}</p>}
+        <div class="article-meta-row">
+          <span>arXiv {formatDate(data.arxivDate)}</span>
+          {data.publicationDate && <span>Published {formatDate(data.publicationDate)}</span>}
+          {data.venue ? <span>{data.venue}</span> : <span>{data.status}</span>}
+        </div>
+        <div class="article-actions">
+          {data.arxivUrl && (
+            <a href={data.arxivUrl} target="_blank" rel="noreferrer">
+              <Icon name="arxiv" size={15} />arXiv
+            </a>
+          )}
+          {data.paperUrl && data.paperUrl !== data.arxivUrl && (
+            <a href={data.paperUrl} target="_blank" rel="noreferrer">
+              <Icon name="paper" size={15} />Paper
+            </a>
+          )}
+        </div>
+      </header>
+
+      <img class="article-hero-image" src={data.image} alt={data.imageAlt || data.title}>
+
+      <div class="prose">
+        <Content />
+      </div>
+    </article>
+  </main>
+</BaseLayout>

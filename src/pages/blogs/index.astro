@@ -1,0 +1,21 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ContentCard from '../../components/ContentCard.astro';
+
+const blogs = (await getCollection('blogs')).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<BaseLayout title="Blogs | Bowen Yu" description="Blog posts and notes by Bowen Yu." page="blogs">
+  <main>
+    <section class="section">
+      <h1>Blogs</h1>
+    </section>
+
+    <section class="section">
+      <div class="card-grid">
+        {blogs.map((entry) => <ContentCard entry={entry} type="blogs" />)}
+      </div>
+    </section>
+  </main>
+</BaseLayout>

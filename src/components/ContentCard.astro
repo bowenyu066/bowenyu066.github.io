@@ -1,0 +1,20 @@
+---
+const { entry, type = 'blogs' } = Astro.props;
+const data = entry.data;
+const formatDate = (date) => new Intl.DateTimeFormat('en', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  timeZone: 'UTC',
+}).format(date);
+const href = `/${type}/${entry.id}/`;
+---
+
+<a class="card" href={href}>
+  <span class="card-image">
+    {data.image ? <img src={data.image} alt={data.imageAlt || data.title} loading="lazy"> : <span class="image-fallback"></span>}
+  </span>
+  <p class="card-date">{formatDate(data.date)}</p>
+  <h3>{data.title}</h3>
+  <p class="card-excerpt">{data.excerpt}</p>
+</a>
