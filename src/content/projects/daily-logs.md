@@ -1,6 +1,6 @@
 ---
 title: "Daily Logs"
-date: 2026-01-01
+date: 2026-03-17
 excerpt: "An iOS daily life logging app for tracking sleep, meals, showers, notes, photos, and lightweight personal analytics."
 tags:
   - SwiftUI
