@@ -13,6 +13,8 @@ tags:
 links:
   - label: "GitHub"
     url: "https://github.com/bowenyu066/OmniChat"
+  - label: "Demo"
+    url: "https://bowenyu066.github.io/OmniChat/"
 draft: false
 ---
 
