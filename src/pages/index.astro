@@ -19,6 +19,30 @@ const highlightedProjects = (await getCollection('projects'))
   .filter((entry) => !entry.data.draft)
   .filter((entry) => entry.data.highlighted)
   .sort((a, b) => (a.data.highlightOrder ?? 999) - (b.data.highlightOrder ?? 999));
+
+const experiences = [
+  {
+    organization: 'Citadel Securities',
+    role: 'Quantitative Research Analyst',
+    period: 'Jun 2026 — Present',
+    location: 'Miami, FL',
+    summary: 'Summer quantitative research in systematic equities.',
+  },
+  {
+    organization: 'ByteDance',
+    role: 'Large Language Model Data Researcher',
+    period: 'Aug — Sep 2025',
+    location: 'Beijing, China',
+    summary: 'Built a 500+ problem physics benchmark and a test-time scaling pipeline for frontier LLM reasoning.',
+  },
+  {
+    organization: 'Intel Corporation',
+    role: 'AI Workload Deployment Intern',
+    period: 'Jun — Jul 2025',
+    location: 'Shanghai, China',
+    summary: 'Developed GPU memory-layout tutorials and CuTeDSL performance references for AI workloads.',
+  },
+];
 ---
 
 <BaseLayout title="Bowen Yu" description="Bowen Yu — undergraduate at MIT, working on machine learning for condensed matter physics and materials science." page="home">
@@ -68,6 +92,30 @@ const highlightedProjects = (await getCollection('projects'))
       </div>
       <ol class="pub-list" data-numbered="true">
         {highlighted.map((publication) => <PublicationItem publication={publication} />)}
+      </ol>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Experience</h2>
+        <a class="section-link" href="/files/cv.pdf" target="_blank" rel="noreferrer">
+          View full experience <Icon name="arrow-right" size={14} />
+        </a>
+      </div>
+      <ol class="experience-list">
+        {experiences.map((experience) => (
+          <li class="experience-item">
+            <div class="experience-meta">
+              <p class="experience-period">{experience.period}</p>
+              <p class="experience-location">{experience.location}</p>
+            </div>
+            <div class="experience-body">
+              <h3>{experience.organization}</h3>
+              <p class="experience-role">{experience.role}</p>
+              <p class="experience-summary">{experience.summary}</p>
+            </div>
+          </li>
+        ))}
       </ol>
     </section>
 

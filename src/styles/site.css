@@ -155,8 +155,8 @@ main {
 }
 
 .section {
-  padding: 3rem 0;
-  border-top: 1px solid var(--line);
+  padding: 3.625rem 0;
+  border-top: 0;
 }
 
 .section:first-of-type {
@@ -184,7 +184,7 @@ h1 {
 }
 
 h2 {
-  font-size: 1.28rem;
+  font-size: 1.9rem;
   line-height: 1.3;
 }
 
@@ -445,6 +445,63 @@ p {
 .pub-links a:hover {
   color: var(--accent);
   border-bottom-color: var(--accent);
+}
+
+/* Experience */
+
+.experience-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.experience-item {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: 1.2rem;
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.experience-item:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.experience-item:last-child {
+  padding-bottom: 0;
+}
+
+.experience-meta p {
+  margin: 0;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.experience-period {
+  font-size: 0.84rem;
+}
+
+.experience-location {
+  margin-top: 0.12rem !important;
+  font-size: 0.8rem;
+}
+
+.experience-body h3 {
+  margin: 0 0 0.15rem;
+}
+
+.experience-role {
+  margin: 0 0 0.35rem;
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+
+.experience-summary {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.58;
 }
 
 /* Card grid (blogs / projects) */
@@ -729,6 +786,21 @@ p {
 
   .pub-thumb {
     max-width: 280px;
+  }
+
+  .experience-item {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .experience-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.65rem;
+  }
+
+  .experience-location {
+    margin-top: 0 !important;
   }
 
   .pub-list[data-numbered='true'] .pub-item::before {
