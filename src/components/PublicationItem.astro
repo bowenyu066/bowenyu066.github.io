@@ -10,7 +10,8 @@ const formatDate = (date) => new Intl.DateTimeFormat('en', {
   timeZone: 'UTC',
 }).format(date);
 
-const venueTag = data.venue ? data.venue : 'In review';
+const venueLabel = data.venue ? data.venue : 'In review';
+const isInReview = !data.venue;
 const dateLine = data.publicationDate
   ? `Published ${formatDate(data.publicationDate)} · arXiv ${formatDate(data.arxivDate)}`
   : `arXiv ${formatDate(data.arxivDate)}`;
@@ -28,7 +29,8 @@ const [beforeMe, afterMe = ''] = data.authors.split('Bowen Yu');
     <p class="pub-authors">{beforeMe}<strong>Bowen Yu</strong>{afterMe}</p>
     {data.authorNote && <p class="pub-note">{data.authorNote}</p>}
     <p class="pub-venue">
-      <span class="venue-tag">{venueTag}</span>
+      <span class:list={['venue-label', { 'is-status': isInReview }]}>{venueLabel}</span>
+      <span class="meta-separator" aria-hidden="true">·</span>
       <span class="meta">{dateLine}</span>
     </p>
     <p class="pub-summary">{data.summary}</p>
