@@ -1,7 +1,7 @@
 ---
-title: "PaperPlay"
+title: "PaperPlay (HackMIT 2025)"
 date: 2025-09-13
-excerpt: "A HackMIT 2025 project that turns hand-drawn Mario-style levels into playable platformers using computer vision and a web frontend."
+excerpt: "A fun project that turns hand-drawn Mario-style levels into playable platformers using computer vision and a web frontend."
 tags:
   - HackMIT
   - Computer Vision

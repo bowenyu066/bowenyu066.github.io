@@ -1,14 +1,16 @@
 ---
 title: "Enhancing Materials Discovery with Valence Constrained Design in Generative Modeling"
-authors: "Mouyang Cheng†,*, Weiliang Luo†, Hao Tang†, Bowen Yu, Yongqiang Cheng, Weiwei Xie, Ju Li, Heather J. Kulik, and Mingda Li*"
+authors: "Mouyang Cheng†,*, Weiliang Luo†, Hao Tang†, Bowen Yu†, Yongqiang Cheng, Weiwei Xie, Ju Li, Heather J. Kulik, and Mingda Li*"
 authorNote: "† Equal contribution. * Corresponding author."
 image: "/images/publications/CrysVCD.png"
 imageAlt: "CrysVCD workflow demonstration"
 summary: "Integrating chemical valence constraints into the generative materials pipeline"
 arxivDate: 2025-07-26
-status: "In review"
+publicationDate: 2026-03-30
+venue: "Nature Computational Science"
+status: "Published"
 arxivUrl: "https://arxiv.org/abs/2507.19799"
-paperUrl: "https://arxiv.org/abs/2507.19799"
+paperUrl: "https://www.nature.com/articles/s43588-026-01037-2"
 highlighted: false
 ---
 

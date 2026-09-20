@@ -1,10 +1,10 @@
 ---
-title: "Fireroad.ai"
+title: "Fireroad.ai (MIT CSAIL Agentic AI Hackathon 2026)"
 date: 2026-04-25
 excerpt: "An AI-powered course-planning prototype for MIT students, combining a Fireroad-style planner with a tool-calling academic advising chat agent."
 image: "/images/projects/fireroad.ai/overall.png"
 highlighted: true
-highlightOrder: 1
+highlightOrder: 3
 tags:
   - Hackathon
   - React
@@ -26,4 +26,4 @@ The current implementation uses a static React frontend with a small Node/Expres
 
 The project won **MIT CSAIL Agentic AI Hackathon 2026** in the Agents for MIT Track! MIT students can sign up and get started with the current prototype at this [link](https://fireroad-ai-lime.vercel.app). Shout out to my wonderful teammates (Kangyang Zhou, Yifan Kang, Chunji Wang, and Dianne Cao) for the fun collab and to the organizers for putting on a great event!
 
-![Team Photo](/images/projects/fireroad.ai/team.png)
+![Team Photo](/images/projects/fireroad.ai/team.jpeg)

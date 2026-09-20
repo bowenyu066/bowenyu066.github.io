@@ -1,6 +1,4 @@
 ---
-import Icon from './Icon.astro';
-
 const { publication } = Astro.props;
 const data = publication.data;
 
@@ -12,10 +10,6 @@ const formatDate = (date) => new Intl.DateTimeFormat('en', {
 
 const venueLabel = data.venue ? data.venue : 'In review';
 const isInReview = !data.venue;
-const dateLine = data.publicationDate
-  ? `Published ${formatDate(data.publicationDate)} · arXiv ${formatDate(data.arxivDate)}`
-  : `arXiv ${formatDate(data.arxivDate)}`;
-
 const detailHref = `/publications/${publication.id}/`;
 const [beforeMe, afterMe = ''] = data.authors.split('Bowen Yu');
 ---
@@ -31,23 +25,15 @@ const [beforeMe, afterMe = ''] = data.authors.split('Bowen Yu');
     <p class="pub-venue">
       <span class:list={['venue-label', { 'is-status': isInReview }]}>{venueLabel}</span>
       <span class="meta-separator" aria-hidden="true">·</span>
-      <span class="meta">{dateLine}</span>
+      <span class="meta">
+        {data.publicationDate && <>
+          {data.paperUrl ? <a class="publication-source-link" href={data.paperUrl} target="_blank" rel="noreferrer">Published</a> : <span>Published</span>}
+          {' '}{formatDate(data.publicationDate)}{' · '}
+        </>}
+        {data.arxivUrl ? <a class="publication-source-link" href={data.arxivUrl} target="_blank" rel="noreferrer">arXiv</a> : <span>arXiv</span>}
+        {' '}{formatDate(data.arxivDate)}
+      </span>
     </p>
     <p class="pub-summary">{data.summary}</p>
-    <div class="pub-links">
-      {data.arxivUrl && (
-        <a href={data.arxivUrl} target="_blank" rel="noreferrer">
-          <Icon name="arxiv" size={15} />arXiv
-        </a>
-      )}
-      {data.paperUrl && data.paperUrl !== data.arxivUrl && (
-        <a href={data.paperUrl} target="_blank" rel="noreferrer">
-          <Icon name="paper" size={15} />Paper
-        </a>
-      )}
-      <a href={detailHref}>
-        <Icon name="external" size={15} />Details
-      </a>
-    </div>
   </div>
 </li>
