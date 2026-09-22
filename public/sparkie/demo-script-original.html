@@ -11,6 +11,9 @@
 @media(max-width:600px){.columns{position:static;grid-template-columns:1fr;gap:5px}.column-title small{display:inline;margin-left:8px}.dialogue{display:flex;flex-direction:column;background:none}.line{padding:12px}.spoken{font-size:23px}.line.other .spoken{font-size:18px}.scene{scroll-margin-top:calc(var(--toolbar-height) + 10px)}.stage-notes{grid-template-columns:1fr;gap:5px}.scene-head{align-items:center}.intro h1{font-size:23px}.tools{gap:5px}.agent .sample{font-size:17px}}
 @media print{body{background:white;color:black}.shell{max-width:none;padding:0}.masthead,.toolbar,.intro,.columns,#script-board,.prep,.footer,.status{display:none!important}.print-only{display:block}.print-scene{break-inside:avoid;border-top:1px solid #aaa;padding:12px 0}.print-scene h2{font-size:16px}.print-scene p{font-size:11px;line-height:1.6}.print-scene .print-spoken{font-size:15px}.print-scene small{font-size:10px}}
 </style>
+<link rel="stylesheet" href="/analytics.css">
+<script src="/analytics-config.js" defer></script>
+<script src="/analytics.js" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -419,5 +422,6 @@ window.addEventListener('keydown',e => {if(e.altKey || e.ctrlKey || e.metaKey ||
 new ResizeObserver(updateMetrics).observe($('.toolbar'));
 countChecks(); parseHash(true); paintClock();
 </script>
+<p class="page-views-footer" data-page-views hidden></p>
 </body>
 </html>

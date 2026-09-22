@@ -16,6 +16,9 @@ const year = new Date().getFullYear();
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <link rel="stylesheet" href="/analytics.css">
+    <script is:inline src="/analytics-config.js" defer></script>
+    <script is:inline src="/analytics.js" defer></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{title}</title>
     <meta name="description" content={description}>
@@ -53,7 +56,7 @@ const year = new Date().getFullYear();
     {comments && <Comments />}
 
     <footer class="site-footer">
-      <p>© {year} Bowen Yu</p>
+      <p>© {year} Bowen Yu <span data-page-views hidden style="margin-left: 1rem"></span></p>
       <p><a href="https://github.com/bowenyu066/bowenyu066.github.io" target="_blank" rel="noreferrer">Source</a></p>
     </footer>
 

@@ -144,3 +144,29 @@ All icons (socials, theme toggle, paper/arXiv link prefixes, arrows) live as inl
 ## Deployment
 
 `.github/workflows/deploy.yml` builds with npm and pushes `dist/` to GitHub Pages. In repo settings, set Pages source to GitHub Actions.
+
+## Visitor statistics
+
+Analytics uses GoatCounter: its dashboard stays private, and the page footer
+shows only the current page's public count. To activate:
+
+1. Register at https://www.goatcounter.com/signup for `https://bowenyu066.github.io`.
+2. Leave the dashboard private. Enable **Allow adding visitor counts on your website**
+   in site settings. This makes counts publicly queryable; it does not expose the dashboard.
+3. Set `endpoint` in `public/analytics-config.js` to your `https://ACCOUNT.goatcounter.com`
+   address. No password or API key belongs in this repository.
+4. Deploy, visit a production page, and verify it appears in the private dashboard.
+
+GoatCounter's default session setting deduplicates repeated views of a page within
+one session. The public count therefore represents page visits, not exact unique
+people across all time. Public counters may be cached for up to four hours.
+Statistics begin when enabled; historical traffic is not recovered.
+
+The shared Astro layout and all standalone Sparkie HTML pages load the same scripts.
+Legacy `/sparky/` redirects are counted at their destinations. Local previews,
+iframes, and presentation speaker/preview modes are excluded. Paths ignore query
+strings and hashes, and `/index.html` is grouped with `/`. Failed or unavailable
+counters stay hidden rather than displaying a misleading zero. An empty endpoint
+leaves analytics disabled. Labels follow the document language (English/Chinese).
+
+Run `npm run build && node scripts/check-analytics.mjs` for focused checks.

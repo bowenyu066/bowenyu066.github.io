@@ -1,0 +1,5 @@
+[data-page-views] { font-size: 12px; font-weight: 400; font-variant-numeric: tabular-nums; white-space: nowrap; }
+[data-page-views][hidden] { display: none !important; }
+.page-views-footer { margin: 20px auto; padding: 0 24px; text-align: center; color: inherit; opacity: .7; }
+.deck-controls [data-page-views] { margin-right: auto; }
+@media print { [data-page-views] { display: none !important; } }

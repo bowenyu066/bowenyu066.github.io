@@ -103,7 +103,7 @@ Aim for a 60-second excerpt showing: **delegation → real Tasks activity during
 - home.html, home.css and home.js: homepage layout, scroll choreography and interactions.
 - assets/: official product assets, sourced Pexels photographs, original placeholders and the repository's Sparkie icon. See assets/CREDITS.md for provenance. No image-generation API was called.
 
-The notes in story-data.js power the current speaker view. Keep speaker-notes.md aligned when changing the talk. Font stacks are local Arial/Helvetica, Georgia and system monospace. There are no CDNs, analytics, external fonts or animation dependencies. YouTube loads only after clicking Play; no external player scripts or thumbnails load before that. The direct YouTube link remains available if embedding is blocked.
+The notes in story-data.js power the current speaker view. Keep speaker-notes.md aligned when changing the talk. Font stacks are local Arial/Helvetica, Georgia and system monospace. There are no external fonts or animation dependencies. Site analytics loads GoatCounter only on the production hostname when configured in `/analytics-config.js`; its public page count appears in the footer. YouTube loads only after clicking Play; no external player scripts or thumbnails load before that. The direct YouTube link remains available if embedding is blocked.
 
 ## Verification and limits
 
