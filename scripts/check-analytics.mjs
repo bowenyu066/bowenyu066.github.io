@@ -36,7 +36,7 @@ function htmlFiles(dir) {
 const pages = htmlFiles('dist').filter(path => !path.startsWith('dist/sparky/'));
 for (const path of pages) {
   const html = readFileSync(path, 'utf8');
-  assert.equal((html.match(/src="\/analytics.js"/g) || []).length, 1, path);
+  assert.equal((html.match(/src="\/analytics.js\?v=2"/g) || []).length, 1, path);
   assert.ok(html.includes('data-page-views'), path);
 }
 console.log(`Analytics checks passed; ${pages.length} built pages covered (redirects excluded).`);
