@@ -165,8 +165,9 @@ Statistics begin when enabled; historical traffic is not recovered.
 The shared Astro layout and all standalone Sparkie HTML pages load the same scripts.
 Legacy `/sparky/` redirects are counted at their destinations. Local previews,
 iframes, and presentation speaker/preview modes are excluded. Paths ignore query
-strings and hashes, and `/index.html` is grouped with `/`. Failed or unavailable
-counters stay hidden rather than displaying a misleading zero. An empty endpoint
+strings and hashes, and `/index.html` is grouped with `/`. New pages show “Views pending” until indexed; failed requests show “Views unavailable”
+rather than disappearing or displaying a misleading zero. Counts use an explicit
+all-time date range starting January 1, 2000. An empty endpoint
 leaves analytics disabled. Labels follow the document language (English/Chinese).
 
 Run `npm run build && node scripts/check-analytics.mjs` for focused checks.

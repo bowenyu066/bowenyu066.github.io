@@ -23,18 +23,25 @@
 
   const counter = document.querySelector('[data-page-views]');
   if (!counter) return;
-  fetch(`${origin}/counter/${encodeURIComponent(path)}.json`, {
+  const chinese = document.documentElement.lang.startsWith('zh');
+  counter.hidden = false;
+  counter.textContent = chinese ? '浏览次数加载中…' : 'Loading views…';
+  // Explicit all-time range also avoids the initially cached, empty default response.
+  fetch(`${origin}/counter/${encodeURIComponent(path)}.json?start=2000-01-01`, {
     credentials: 'omit',
     signal: AbortSignal.timeout(8000),
   }).then(response => {
-    if (!response.ok) throw new Error('Counter unavailable');
+    if (!response.ok) throw new Error(response.status === 404 ? 'pending' : 'unavailable');
     return response.json();
   }).then(data => {
-    // A failure or a new, unindexed page must never look like a genuine zero.
-    if (typeof data.count !== 'string' || !/^[0-9][0-9, .\u00a0\u202f]*$/.test(data.count)) return;
-    const chinese = document.documentElement.lang.startsWith('zh');
+    // Invalid responses must never look like a genuine zero.
+    if (typeof data.count !== 'string' || !/^[0-9][0-9, .\u00a0\u202f]*$/.test(data.count)) throw new Error('unavailable');
     counter.textContent = chinese ? `${data.count} 次浏览` : `${data.count} views`;
     counter.title = chinese ? '浏览次数定期更新' : 'View count updates periodically';
     counter.hidden = false;
-  }).catch(() => { /* Analytics must never interrupt the page. */ });
+  }).catch(error => {
+    counter.textContent = error.message === 'pending'
+      ? (chinese ? '浏览次数待更新' : 'Views pending')
+      : (chinese ? '浏览次数暂不可用' : 'Views unavailable');
+  });
 })();
