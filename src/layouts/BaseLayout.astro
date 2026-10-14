@@ -29,9 +29,30 @@ const year = new Date().getFullYear();
     <link rel="manifest" href="/images/manifest.json">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
     <script is:inline>
-      const savedTheme = localStorage.getItem('theme');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.dataset.theme = savedTheme || (prefersDark ? 'dark' : 'light');
+      const themeOverrideKey = 'theme-override';
+      let themeOverride;
+      try {
+        themeOverride = JSON.parse(localStorage.getItem(themeOverrideKey) || 'null');
+      } catch {
+        // Automatic mode also works when storage is unavailable.
+      }
+      const nextThemeBoundary = (now) => {
+        const boundary = new Date(now);
+        const hour = now.getHours();
+        boundary.setHours(hour < 7 ? 7 : hour < 19 ? 19 : 31, 0, 0, 0);
+        return boundary.getTime();
+      };
+      const refreshTheme = () => {
+        const now = new Date();
+        const hour = now.getHours();
+        const automaticTheme = hour >= 7 && hour < 19 ? 'light' : 'dark';
+        const validOverride = themeOverride
+          && (themeOverride.theme === 'light' || themeOverride.theme === 'dark')
+          && Number.isFinite(themeOverride.expiresAt)
+          && themeOverride.expiresAt > now.getTime();
+        document.documentElement.dataset.theme = validOverride ? themeOverride.theme : automaticTheme;
+      };
+      refreshTheme();
     </script>
   </head>
   <body data-page={page}>
@@ -74,22 +95,62 @@ const year = new Date().getFullYear();
           lightIcon.hidden = isDark;
           darkIcon.hidden = !isDark;
         }
+        const label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+        button?.setAttribute('aria-label', label);
+        button?.setAttribute('title', label);
       };
+      let giscusReadyWindow;
+      let lastGiscusTheme;
       const syncGiscusTheme = () => {
         const theme = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
         const iframe = document.querySelector('iframe.giscus-frame');
-        iframe?.contentWindow?.postMessage({ giscus: { setConfig: { theme } } }, 'https://giscus.app');
+        if (!giscusReadyWindow || iframe?.contentWindow !== giscusReadyWindow || theme === lastGiscusTheme) return;
+        giscusReadyWindow.postMessage({ giscus: { setConfig: { theme } } }, 'https://giscus.app');
+        lastGiscusTheme = theme;
       };
 
-      syncIcons();
-      button?.addEventListener('click', () => {
-        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-        document.documentElement.dataset.theme = next;
-        localStorage.setItem('theme', next);
+      let themeTimer;
+      const syncTheme = () => {
+        refreshTheme();
         syncIcons();
         syncGiscusTheme();
+        clearTimeout(themeTimer);
+        const now = new Date();
+        // Recheck at least once a minute for local clock/timezone changes.
+        themeTimer = setTimeout(syncTheme, Math.min(nextThemeBoundary(now) - now.getTime(), 60_000));
+      };
+
+      syncTheme();
+      button?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        themeOverride = { theme: next, expiresAt: nextThemeBoundary(new Date()) };
+        try {
+          localStorage.setItem(themeOverrideKey, JSON.stringify(themeOverride));
+        } catch {
+          // Keep the override for this page when storage is unavailable.
+        }
+        syncTheme();
       });
-      window.addEventListener('message', syncIcons);
+      window.addEventListener('focus', syncTheme);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) syncTheme();
+      });
+      window.addEventListener('storage', (event) => {
+        if (event.key !== themeOverrideKey && event.key !== null) return;
+        try {
+          themeOverride = JSON.parse(event.newValue || 'null');
+        } catch {
+          themeOverride = null;
+        }
+        syncTheme();
+      });
+      window.addEventListener('message', (event) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (event.origin !== 'https://giscus.app' || !iframe?.contentWindow || event.source !== iframe.contentWindow) return;
+        if (giscusReadyWindow !== event.source) lastGiscusTheme = undefined;
+        giscusReadyWindow = event.source;
+        syncGiscusTheme();
+      });
 
       const header = document.querySelector('.site-header');
       const onScroll = () => {

@@ -135,7 +135,7 @@ Replace `public/files/cv.pdf` when the CV changes. The nav opens it directly in 
 
 ## Comments and theme
 
-Giscus comments live in `src/components/Comments.astro`. The light/dark toggle is in `src/layouts/BaseLayout.astro` and stores the choice in `localStorage`.
+Giscus comments live in `src/components/Comments.astro` and follow the page's theme. The theme follows the visitor's local clock: light from 7 a.m. to 7 p.m., dark otherwise. Open pages update automatically. The toggle in `src/layouts/BaseLayout.astro` saves a manual override in `localStorage` until the next 7 a.m./7 p.m. boundary, then resumes automatic mode. Older permanent theme preferences are ignored.
 
 ## Icons
 
