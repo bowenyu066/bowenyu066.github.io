@@ -4,8 +4,8 @@ date: 2025-7-3 17:44:03 +0800
 excerpt: "Notes on linear layouts in Triton and its conversion with various traditional layout types."
 image: "/images/posts/2025-6-17-linear-layouts-in-triton/1.png"
 imageAlt: "Linear layout basis diagram"
-highlighted: true
-highlightOrder: 1
+# highlighted: true
+# highlightOrder: 1
 tags: 
     - Computer Science
 categories: 

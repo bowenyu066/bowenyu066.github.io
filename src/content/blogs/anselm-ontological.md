@@ -1,14 +1,13 @@
 ---
 title: Can God Be Proved to Exist? —Regarding Anselm’s Ontological Argument
 date: 2026-05-03 11:42:00 -0400
-excerpt: "Anselm’s ontological argument, presented in Proslogion II, seeks to demonstrate the existence of God solely by reflecting on the concept of God as \"something than which nothing greater can be thought.\" I will analyze the argument, its premises, and the logical structure in this blog post."
+excerpt: "How much do you know about God?"
 image: "/images/posts/anselm-ontological/image.png"
 tags: 
     - Philosophy
 categories: 
     - Notes
-highlighted: true
-highlightOrder: 2
+highlighted: false
 ---
 > Note: This blog post was one of my course papers for Problems of Philosophy class (24.00) at MIT, written in Spring 2025. It was also my first attempt at writing a philosophical paper.
 
