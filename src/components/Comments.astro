@@ -1,9 +1,12 @@
 ---
 const repo = 'bowenyu066/bowenyu066.github.io';
+const pathname = Astro.url.pathname.replace(/^\/|\/$/g, '');
+// Keep the discussion titles Giscus created for the site's directory URLs.
+const term = pathname ? `${pathname}/` : 'index';
 ---
 
 <section class="comments-shell" aria-label="Comments">
-  <script is:inline define:vars={{ repo }}>
+  <script is:inline define:vars={{ repo, term }}>
     const giscusScript = document.createElement('script');
     giscusScript.src = 'https://giscus.app/client.js';
     giscusScript.async = true;
@@ -13,8 +16,9 @@ const repo = 'bowenyu066/bowenyu066.github.io';
       repoId: 'R_kgDOOSbJ2A',
       category: 'Announcements',
       categoryId: 'DIC_kwDOOSbJ2M4CsmZz',
-      mapping: 'pathname',
-      strict: '0',
+      mapping: 'specific',
+      term,
+      strict: '1',
       reactionsEnabled: '1',
       emitMetadata: '0',
       inputPosition: 'bottom',
