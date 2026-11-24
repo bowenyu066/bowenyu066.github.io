@@ -31,11 +31,6 @@ const formatDate = (date) => new Intl.DateTimeFormat('en', {
       <header class="article-header">
         <h1>{data.title}</h1>
         <p class="article-meta">{formatDate(data.date)}</p>
-        {data.tags && (
-          <div class="tag-row">
-            {data.tags.map((tag) => <span>{tag}</span>)}
-          </div>
-        )}
         {data.links && (
           <div class="article-actions">
             {data.links.map((link) => (

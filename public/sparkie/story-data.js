@@ -140,21 +140,21 @@ window.SPARKIE_STORY = {
       "context": "The team is discussing a possible use for the assistant.",
       "utterance": "“Sparkie could help with this later.”",
       "decision": "quiet",
-      "label": "Quiet · keep listening",
+      "label": "Quiet, keep listening",
       "reason": "A third-person mention does not invite a reply."
     },
     {
       "context": "Sparkie has just compared two approaches for the team.",
       "utterance": "“Which one would you choose?”",
       "decision": "active",
-      "label": "Active · respond to this turn",
+      "label": "Active, respond to this turn",
       "reason": "The recent exchange makes this a follow-up, even without the name."
     },
     {
       "context": "Two teammates are speaking to each other; the recipient is unclear.",
       "utterance": "“Can you take care of that?”",
       "decision": "quiet",
-      "label": "Quiet · keep listening",
+      "label": "Quiet, keep listening",
       "reason": "Being able to help is not enough. An unclear recipient means no reply."
     }
   ]

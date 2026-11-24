@@ -81,7 +81,7 @@
     const slide = data.slides[state.slide];
     $('#speaker-title').textContent = slide.title;
     $('#speaker-notes').textContent = slide.notes; $('#speaker-cue').textContent = slide.cue;
-    $('#speaker-time').textContent = 'SLIDE ' + number(state.slide) + ' · ' + slide.seconds + ' SECONDS';
+    $('#speaker-time').textContent = 'SLIDE ' + number(state.slide) + ', ' + slide.seconds + ' SECONDS';
     $('#speaker-count').textContent = number(state.slide) + ' / 10';
     $('#speaker-beat').textContent = 'Item ' + (state.beat + 1) + ' of ' + story.counts[state.slide];
     $('#speaker-next').textContent = state.beat + 1 < story.counts[state.slide] ? 'Next: reveal item ' + (state.beat + 2) + ' on this slide.' : state.slide < 9 ? 'Next slide: ' + data.slides[state.slide + 1].title : 'End of the presentation.';
@@ -238,7 +238,7 @@
       $('#artifact-full-image').src = $('#product-capture-image').src;
       $('#artifact-full-image').alt = $('#product-capture-image').alt;
       setText('#artifact-preview-title', story.product[state.beat].label);
-      setText('#artifact-preview-caption', 'Actual local voice session · separate from the Zoom recording');
+      setText('#artifact-preview-caption', 'Actual local voice session, separate from the Zoom recording');
       $('#artifact-preview').showModal();
     };
     $('#open-artifact').onclick = () => {

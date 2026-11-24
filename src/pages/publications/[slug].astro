@@ -30,17 +30,14 @@ const [beforeMe, afterMe = ''] = data.authors.split('Bowen Yu');
         <h1>{data.title}</h1>
         <p class="article-meta">{beforeMe}<strong>Bowen Yu</strong>{afterMe}</p>
         {data.authorNote && <p class="article-note">{data.authorNote}</p>}
-        <div class="article-meta-row">
-          <span>
-            {data.arxivUrl ? <a class="publication-source-link" href={data.arxivUrl} target="_blank" rel="noreferrer">arXiv</a> : <span>arXiv</span>}
-            {' '}{formatDate(data.arxivDate)}
-          </span>
-          {data.publicationDate && <span>
+        <p class="article-meta-row">
+          {data.publicationDate && <>
             {data.paperUrl ? <a class="publication-source-link" href={data.paperUrl} target="_blank" rel="noreferrer">Published</a> : <span>Published</span>}
-            {' '}{formatDate(data.publicationDate)}
-          </span>}
-          {data.venue ? <span>{data.venue}</span> : <span>{data.status}</span>}
-        </div>
+            {' '}{formatDate(data.publicationDate)}{', '}
+          </>}
+          {data.arxivUrl ? <a class="publication-source-link" href={data.arxivUrl} target="_blank" rel="noreferrer">arXiv</a> : <span>arXiv</span>}
+          {' '}{formatDate(data.arxivDate)}{', '}{data.venue || data.status}
+        </p>
       </header>
 
       <img class="article-hero-image" src={data.image} alt={data.imageAlt || data.title}>

@@ -395,10 +395,6 @@ p {
 }
 
 .pub-venue {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.3rem;
   margin: 0 0 0.6rem;
   font-size: 0.88rem;
   color: var(--ink);
@@ -412,10 +408,6 @@ p {
 .pub-venue .venue-label.is-status {
   font-style: italic;
   font-weight: 500;
-}
-
-.pub-venue .meta-separator {
-  color: var(--line);
 }
 
 .pub-summary {
@@ -598,9 +590,6 @@ p {
 }
 
 .article-meta-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem 1rem;
   margin: 0.6rem 0 1rem;
   color: var(--muted);
   font-size: 0.88rem;
@@ -635,25 +624,6 @@ p {
   margin: 1.4rem 0;
   object-fit: contain;
   background: var(--surface);
-}
-
-.tag-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem 0;
-  margin-top: 0.7rem;
-}
-
-.tag-row span {
-  color: var(--muted);
-  font-size: 0.82rem;
-  line-height: 1.4;
-}
-
-.tag-row span + span {
-  margin-left: 0.65rem;
-  padding-left: 0.65rem;
-  border-left: 1px solid var(--line);
 }
 
 .prose {

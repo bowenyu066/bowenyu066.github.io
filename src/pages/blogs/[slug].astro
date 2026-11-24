@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
 
 export async function getStaticPaths() {
   const blogs = await getCollection('blogs');
@@ -13,35 +14,240 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
 const data = entry.data;
+const isEssaySummary = entry.id === 'steps-towards-artificial-collective-intelligence';
+const topHeadingDepth = Math.min(...headings.map((heading) => heading.depth));
+const readingMinutes = isEssaySummary ? undefined : estimateReadingMinutes(entry.body ?? '');
 const formatDate = (date) => new Intl.DateTimeFormat('en', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
   timeZone: 'UTC',
 }).format(date);
+
+function estimateReadingMinutes(markdown: string) {
+  const body = markdown.replace(/^ {0,3}(\x60{3,}|~{3,}).*\n[\s\S]*?^ {0,3}\1[ \t]*$/gm, ' ');
+  const equations = [...body.matchAll(/\$\$[\s\S]*?\$\$/g)].length;
+  const text = body
+    .replace(/\$\$[\s\S]*?\$\$/g, ' ')
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1');
+  const segments = new Intl.Segmenter('en', { granularity: 'word' }).segment(text);
+  const words = Array.from(segments).filter((segment) => segment.isWordLike).length;
+
+  const wordsPerMinute = 220;
+  const equationsPerMinute = 5;
+  return Math.max(1, Math.ceil(words / wordsPerMinute + equations / equationsPerMinute));
+}
 ---
 
-<BaseLayout title={`${data.title} | Bowen Yu`} description={data.excerpt} page="blogs">
+<BaseLayout title={`${data.title} | Bowen Yu`} description={data.excerpt} page="blogs" comments={!isEssaySummary}>
   <main>
     <article class="article">
       <a class="back-link" href="/blogs/">← Blogs</a>
       <header class="article-header">
         <h1>{data.title}</h1>
-        <p class="article-meta">{formatDate(data.date)}</p>
-        {data.tags && (
-          <div class="tag-row">
-            {data.tags.map((tag) => <span>{tag}</span>)}
-          </div>
-        )}
+        {data.authors && <p class="article-meta">{data.authors}</p>}
+        <p class="article-meta">
+          <time datetime={data.date.toISOString().slice(0, 10)}>{formatDate(data.date)}</time>{readingMinutes && <>, {readingMinutes} min read</>}
+        </p>
       </header>
 
-      {data.image && data.showHeroImage && <img class="article-hero-image" src={data.image} alt={data.imageAlt || data.title}>}
-
-      <div class="prose">
-        <Content />
+      <div class="blog-content">
+        {headings.length > 0 && (
+          <aside class="blog-outline-rail">
+            <details class="blog-outline">
+              <summary>
+                <span class="blog-outline-label">On this page</span>
+                <span class="blog-outline-icon"><Icon name="list" size={20} /></span>
+              </summary>
+              <nav aria-label="On this page">
+                <ul>
+                  {headings.map((heading) => (
+                    <li style={{ '--outline-depth': heading.depth - topHeadingDepth }}>
+                      <a href={'#' + encodeURIComponent(heading.slug)}>{heading.text}</a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </details>
+          </aside>
+        )}
+        <div class="blog-body">
+          {data.image && data.showHeroImage && <img class="article-hero-image" src={data.image} alt={data.imageAlt || data.title}>}
+          <div class="prose">
+            <Content />
+          </div>
+        </div>
       </div>
     </article>
   </main>
 </BaseLayout>
+
+<script>
+  const outline = document.querySelector<HTMLDetailsElement>('.blog-outline');
+  if (outline) {
+    const wideScreen = window.matchMedia('(min-width: 1280px)');
+    const syncOutline = () => { outline.open = wideScreen.matches; };
+    syncOutline();
+    wideScreen.addEventListener('change', syncOutline);
+
+    document.addEventListener('click', (event) => {
+      if (wideScreen.matches || !outline.open || !(event.target instanceof Element)) return;
+      if (!outline.contains(event.target) || event.target.closest('nav a')) {
+        outline.open = false;
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || wideScreen.matches || !outline.open) return;
+      const focusWasInside = outline.contains(document.activeElement);
+      outline.open = false;
+      if (focusWasInside) outline.querySelector('summary')?.focus();
+    });
+  }
+</script>
+
+<style>
+  .blog-content {
+    position: relative;
+  }
+
+  .blog-body .prose {
+    overflow-wrap: anywhere;
+  }
+
+  .blog-body :global([id]) {
+    scroll-margin-top: 6rem;
+  }
+
+  .blog-body :global(.katex-display) {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .blog-outline {
+    font-size: 0.875rem;
+    line-height: 1.45;
+  }
+
+  .blog-outline summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .blog-outline nav {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .blog-outline ul {
+    display: grid;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .blog-outline li {
+    padding-inline-start: calc(var(--outline-depth) * 0.65rem);
+    overflow-wrap: anywhere;
+  }
+
+  .blog-outline a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .blog-outline a:hover,
+  .blog-outline a:focus-visible {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  @media (min-width: 1280px) {
+    .blog-outline-rail {
+      position: absolute;
+      inset-block: 0;
+      inset-inline-start: calc(100% + 1.5rem);
+      width: min(14rem, calc((100vw - var(--max)) / 2 - 2.5rem));
+    }
+
+    .blog-outline {
+      position: sticky;
+      top: 5rem;
+      padding-inline-start: 1rem;
+      border-inline-start: 1px solid var(--line);
+    }
+
+    .blog-outline nav {
+      max-height: calc(100dvh - 8rem);
+      margin-top: 0.65rem;
+    }
+
+    .blog-outline-icon {
+      display: none;
+    }
+  }
+
+  @media (width < 1280px) {
+    .blog-outline-rail {
+      position: fixed;
+      z-index: 19;
+      inset-inline-end: max(0.75rem, env(safe-area-inset-right));
+      bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+
+    .blog-outline summary {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      list-style: none;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: var(--surface);
+      color: var(--muted);
+    }
+
+    .blog-outline summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .blog-outline summary:hover,
+    .blog-outline[open] summary {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .blog-outline-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .blog-outline-icon {
+      display: flex;
+    }
+
+    .blog-outline nav {
+      position: absolute;
+      inset-inline-end: 0;
+      bottom: calc(100% + 0.5rem);
+      width: min(18rem, calc(100vw - 2rem));
+      max-height: min(60dvh, 26rem);
+      padding: 0.85rem 1rem;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: var(--surface);
+    }
+
+    .blog-outline a {
+      display: block;
+      padding: 0.2rem 0;
+    }
+  }
+</style>

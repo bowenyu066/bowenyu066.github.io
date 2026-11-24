@@ -23,12 +23,11 @@ const [beforeMe, afterMe = ''] = data.authors.split('Bowen Yu');
     <p class="pub-authors">{beforeMe}<strong>Bowen Yu</strong>{afterMe}</p>
     {data.authorNote && <p class="pub-note">{data.authorNote}</p>}
     <p class="pub-venue">
-      <span class:list={['venue-label', { 'is-status': isInReview }]}>{venueLabel}</span>
-      <span class="meta-separator" aria-hidden="true">·</span>
+      <span class:list={['venue-label', { 'is-status': isInReview }]}>{venueLabel}</span>{', '}
       <span class="meta">
         {data.publicationDate && <>
           {data.paperUrl ? <a class="publication-source-link" href={data.paperUrl} target="_blank" rel="noreferrer">Published</a> : <span>Published</span>}
-          {' '}{formatDate(data.publicationDate)}{' · '}
+          {' '}{formatDate(data.publicationDate)}{', '}
         </>}
         {data.arxivUrl ? <a class="publication-source-link" href={data.arxivUrl} target="_blank" rel="noreferrer">arXiv</a> : <span>arXiv</span>}
         {' '}{formatDate(data.arxivDate)}
